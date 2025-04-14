@@ -3,53 +3,76 @@ from utils import resize_image
 from headerNav import NavigationHeader
 
 class AboutPage(ctk.CTkFrame):
-    def __init__(self, parent, app=None):
+    def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.configure(width=600, height=700)
+        self.configure(width=600, height=700, fg_color="transparent")
+        
+        self.create_about_page()
 
-        self.create_header()
-        self.create_about_body()
-
-    def create_header(self):
+    def create_about_page(self):
+        # Add navigation header
         NavigationHeader(self, app=self.app).pack(side="top", fill="x")
 
-    def create_about_body(self):
+        # Main body frame
+        self.body_frame = ctk.CTkFrame(self, fg_color="#EDEDED")
+        self.body_frame.pack(fill="both", expand=True)
 
-        # frame to hold the background image and content
-        body_frame = ctk.CTkFrame(self, fg_color="transparent")
-        body_frame.pack(fill="both", expand=True)
+        try:
+            self.bg_image = resize_image((900, 900), "images/loginbackground.png")
+            bg_label = ctk.CTkLabel(self.body_frame, image=self.bg_image, text="")
+            bg_label.place(relx=0, rely=0, relwidth=1, relheight=1)
+        except Exception as e:
+            print("[Background Error]", e)
 
-        # Background image
-        self.bg_image = resize_image((800, 800), "images/loginbackground.png")
-        bg_label = ctk.CTkLabel(body_frame, image=self.bg_image, text="")
-        bg_label.pack(fill="both", expand=True)
+        # Content frame
+        content_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Overlay content frame on top of the background
-        content_frame = ctk.CTkFrame(body_frame, fg_color="transparent")
-        content_frame.place(relx=0.5, rely=0.5, anchor="center")  # Center the content
+        # Center white frame
+        center_frame = ctk.CTkFrame(content_frame, fg_color="#FFFFFF", corner_radius=15)
+        center_frame.pack(fill="both", expand=True, padx=40, pady=40)
 
         # Title
         ctk.CTkLabel(
-            content_frame,
+            center_frame,
             text="About Us",
-            font=("Poppins", 24, "bold"),
+            font=("Poppins", 32, "bold"),
             text_color="black"
-        ).pack(pady=(10, 15))
+        ).pack(pady=(30,20))
 
-        # Description
-        about_text = (
-            "Welcome to Ice & Spice!\n"
-            "We are passionate about serving delicious food to satisfy your cravings.\n"
-            "Our kitchen is open daily from 10:00 AM to 10:00 PM.\n"
-            "Come enjoy a great dining experience with us!"
-        )
-
+        # Welcome text
         ctk.CTkLabel(
-            content_frame,
-            text=about_text,
-            font=("Poppins", 14),
-            text_color="black",
-            justify="center",
-            width=500
-        ).pack()
+            center_frame,
+            text="Welcome to Ice & Spice!",
+            font=("Poppins", 18),
+            text_color="black"
+        ).pack(pady=(0,20))
+
+        # Description text
+        description_frame = ctk.CTkFrame(center_frame, fg_color="transparent")
+        description_frame.pack(fill="x", padx=50)
+
+        descriptions = [
+            "We are passionate about serving delicious food to satisfy your cravings.",
+            "Our kitchen is open daily from 10:00 AM to 10:00 PM",
+            "Come enjoy a great dining experience with us!"
+        ]
+
+        for desc in descriptions:
+            ctk.CTkLabel(
+                description_frame,
+                text=desc,
+                font=("Poppins", 14),
+                text_color="black",
+                wraplength=400,
+                justify="center"
+            ).pack(pady=5)
+
+        # Restaurant tag
+        ctk.CTkLabel(
+            center_frame,
+            text="@icenspicerestaurant",
+            font=("Poppins", 12),
+            text_color="gray"
+        ).pack(side="bottom", pady=20)

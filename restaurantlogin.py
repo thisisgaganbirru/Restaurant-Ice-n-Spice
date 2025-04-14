@@ -3,6 +3,7 @@ from utils import resize_image
 from dbconnection import DB_CONFIG
 import mysql.connector
 from signup import SignupPage
+from admin_dashboard import AdminHomePage
 
 class LoginPage(ctk.CTkFrame):
 
@@ -23,17 +24,28 @@ class LoginPage(ctk.CTkFrame):
             cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
             user = cursor.fetchone()
             db.close()
+
+            # if user:
+            #     user['userId'] = user.pop('id')  # Rename 'id' to 'userId'
+
         except mysql.connector.Error as err:
             self.error_label.configure(text=f"Database error: {err}")
             return
-
+        
         if user:
             if user["role"] == "customer":
                 self.app.logged_in_user = user
-                from menu import MenuPage  # Lazy import to avoid circular imports
+                # from menu import MenuPage  # Lazy import to avoid circular imports
                 for widget in self.master.winfo_children():  
                     widget.destroy()
-                self.app.show_menu_page() 
+                self.app.show_menu_page()
+            
+            elif user["role"] == "admin":
+                # from admin_dashboard import AdminHomePage
+                for widget in self.master.winfo_children():  
+                    widget.destroy()
+                self.app.show_adminHome_page()
+             
             else:
                 self.error_label.configure(text="Access denied: Not a customer", text_color="red")
         else:

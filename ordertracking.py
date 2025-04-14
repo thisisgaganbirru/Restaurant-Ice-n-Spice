@@ -2,104 +2,161 @@ import customtkinter as ctk
 import mysql.connector
 from dbconnection import DB_CONFIG
 from utils import resize_image
+from headerNav import NavigationHeader
 
 class OrderTrackingPage(ctk.CTkFrame):
     def __init__(self, parent, app=None, user=None):
         super().__init__(parent)
         self.app = app
+        self.user = user
         self.configure(width=600, height=700, fg_color="transparent")
+        
+        self.create_tracking_page()
 
-        self.user = user or {}
-        self.user_id = self.user.get("id")
-        self.username = self.user.get("username")
+    def create_tracking_page(self):
+        # Main container with navigation header
+        
+        # Add navigation header
+        NavigationHeader(self, app=self.app).pack(side="top", fill="x")
 
-        self.image_refs = []
+        # Main body frame
+        self.body_frame = ctk.CTkFrame(self, fg_color="#EDEDED")
+        self.body_frame.pack(fill="both", expand=True)
 
-        self.configure(fg_color="transparent")
+        try:
+            self.bg_image = resize_image((900, 900), "images/loginbackground.png")
+            bg_label = ctk.CTkLabel(self.body_frame, image=self.bg_image, text="")
+            bg_label.place(relx=0, rely=0, relwidth=1, relheight=1)
+        except Exception as e:
+            print("[Background Error]", e)
 
-        self.create_header()
-        self.create_order_section()
+        # Content frame
+        content_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def create_header(self):
-        title = ctk.CTkLabel(
-            self, text=f"Your Orders, {self.username}",
-            font=("Poppins", 22, "bold"), text_color="black"
+        # Header with icon
+        header_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        header_frame.pack(fill="x", pady=20)
+
+        # Box icon and title
+        try:
+            box_icon = resize_image((30, 30), "images/box_icon.png")
+            ctk.CTkLabel(header_frame, image=box_icon, text="").pack(side="left", padx=10)
+        except:
+            pass
+        
+        ctk.CTkLabel(
+            header_frame,
+            text="Your Orders",
+            font=("Poppins", 24, "bold"),
+            text_color="black"
+        ).pack(side="left", padx=10)
+
+        # Orders container
+        orders_frame = ctk.CTkScrollableFrame(
+            content_frame,
+            fg_color="white",
+            height=400
         )
-        title.pack(pady=(20, 10))
+        orders_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def create_order_section(self):
-        self.orders_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.orders_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        # Get and display orders
+        orders = self.get_orders()
+        if orders:
+            for order in orders:
+                self.create_order_card(orders_frame, order)
+        else:
+            ctk.CTkLabel(
+                orders_frame,
+                text="No orders yet",
+                font=("Poppins", 16, "italic"),
+                text_color="gray"
+            ).pack(pady=20)
 
-        self.load_orders()
+    def create_order_card(self, parent, order):
+        # Order card
+        card = ctk.CTkFrame(
+            parent,
+            fg_color="white",
+            border_width=1,
+            border_color="#FFD700",
+            height=100
+        )
+        card.pack(fill="x", pady=5, padx=10)
+        card.pack_propagate(False)
+
+        # Items list
+        items_frame = ctk.CTkFrame(card, fg_color="white")
+        items_frame.pack(fill="x", padx=10, pady=5)
+
+        ctk.CTkLabel(
+            items_frame,
+            text="📝 Items:",
+            font=("Poppins", 12, "bold"),
+            text_color="black"
+        ).pack(side="left")
+
+        ctk.CTkLabel(
+            items_frame,
+            text=order['items_list'],
+            font=("Poppins", 12),
+            text_color="black"
+        ).pack(side="left", padx=5)
+
+        # Total and status
+        info_frame = ctk.CTkFrame(card, fg_color="white")
+        info_frame.pack(fill="x", padx=10)
+
+        ctk.CTkLabel(
+            info_frame,
+            text=f"Total: ${order['total_price']:.2f}",
+            font=("Poppins", 14, "bold"),
+            text_color="black"
+        ).pack(side="left")
+
+        # Status with different colors and icons
+        status_info = {
+            'pending': {'color': '#FFA500', 'icon': '⏳'},
+            'preparing': {'color': '#4169E1', 'icon': '👨‍🍳'},
+            'ready for pickup': {'color': '#32CD32', 'icon': '✅'},
+            'pending payment': {'color': '#FF4500', 'icon': '💰'},
+            'delivered': {'color': '#228B22', 'icon': '🚚'}
+        }
+
+        status = order['status'].lower()
+        status_data = status_info.get(status, {'color': '#000000', 'icon': '❓'})
+
+        status_frame = ctk.CTkFrame(info_frame, fg_color="white")
+        status_frame.pack(side="right")
+
+        # Status icon and text
+        ctk.CTkLabel(
+            status_frame,
+            text=f"{status_data['icon']} {status.capitalize()}",
+            font=("Poppins", 12, "bold"),
+            text_color=status_data['color']
+        ).pack(side="right")
 
     def get_orders(self):
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor(dictionary=True)
-
+            
             cursor.execute("""
-                SELECT items_list, total_price, status 
-                FROM orders WHERE user_id = %s ORDER BY id DESC
-            """, (self.user_id,))
+                SELECT OrderID as id, Item_list as items_list, Total_price as total_price, 
+                       Status as status, CreatedAT as created_at
+                FROM `Order` 
+                WHERE UserID = %s 
+                ORDER BY CreatedAT DESC
+            """, (self.user.get('userID'),))
+            
             return cursor.fetchall()
-        except mysql.connector.Error as err:
-            print(f"DB Error: {err}")
-            return []
-
-    def load_orders(self):
-        for widget in self.orders_frame.winfo_children():
-            widget.destroy()
-
-        orders = self.get_orders()
-        if not orders:
-            ctk.CTkLabel(self.orders_frame, text="No orders yet.",
-                         font=("Arial", 14), text_color="gray").pack(pady=20)
-            return
-
-        for order in orders:
-            self.create_order_card(order)
-
-    def create_order_card(self, order):
-        card = ctk.CTkFrame(
-            self.orders_frame,
-            fg_color="white",
-            border_width=2,
-            border_color="#F1D94B",
-            width=430,
-            height=160,
-            corner_radius=10
-        )
-        card.pack(pady=10, padx=10, fill="x")
-        card.pack_propagate(False)
-
-        # --- Image Frame ---
-        image_frame = ctk.CTkFrame(card, width=160, height=160, fg_color="white")
-        image_frame.pack(side="left", fill="y")
-        image_frame.pack_propagate(False)
-
-        try:
-            placeholder_img = resize_image((130, 130), "images/food_order_icon.png")
-            self.image_refs.append(placeholder_img)
-            ctk.CTkLabel(image_frame, image=placeholder_img, text="").pack(padx=10, pady=10)
         except Exception as e:
-            print("Image Load Error:", e)
-            ctk.CTkLabel(image_frame, text="🛒 Order", font=("Arial", 16)).pack(pady=20)
-
-        # --- Details Frame ---
-        details_frame = ctk.CTkFrame(card, fg_color="white")
-        details_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
-        details_frame.pack_propagate(False)
-
-        ctk.CTkLabel(details_frame, text=f"📝 {order['items_list']}",
-                     font=("Arial", 12), text_color="black", wraplength=220,
-                     justify="left").pack(anchor="w", pady=(0, 5))
-
-        ctk.CTkLabel(details_frame, text=f"💲 Total: ${order['total_price']:.2f}",
-                     font=("Arial", 12, "bold"), text_color="#E53935").pack(anchor="w")
-
-        ctk.CTkLabel(details_frame, text=f"📦 Status: {order['status'].capitalize()}",
-                     font=("Arial", 12), text_color="blue").pack(anchor="w", pady=(5, 0))
+            print(f"Database Error: {e}")
+            return []
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
 # Utility launcher
 

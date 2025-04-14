@@ -8,6 +8,21 @@ from ordertracking import OrderTrackingPage
 from about import AboutPage
 from contact import ContactPage
 from account import CustomerAccountPage
+from admin_dashboard import AdminHomePage
+from admin_add_item import AddItemPage
+from admin_update_item import UpdateItemPage
+from admin_remove_item import RemoveItemPage
+from admin_reports import ReportsPage
+from admin_order_tracking import AdminOrderTrackingPage
+# from admin_update_item import UpdateItemPage
+# from admin_remove_item import RemoveItemPage
+# from admin_reports import ReportsPage
+# from admin_order_tracking import OrderTrackingPage
+import os
+import sys
+import time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
     
 
@@ -45,11 +60,20 @@ class App(ctk.CTk):
     
     def show_menu_page(self):
         self.clear_main_frame()
-        MenuPage(self.main_frame, app = self, user=self.logged_in_user).pack(fill="both", expand=True)
+        menu_page = MenuPage(self.main_frame, app=self, user=self.logged_in_user)
+        menu_page.pack(fill="both", expand=True)
         
     def show_order_page(self, user, cart):
         self.clear_main_frame()
-        OrderPage(self.main_frame, app=self, user=user, cart=cart).pack(fill="both", expand=True)
+        try:
+            OrderPage(
+                self.main_frame, 
+                app=self, 
+                user=user or {"username": "User"}, 
+                cart=cart
+            ).pack(fill="both", expand=True)
+        except Exception as e:
+            print(f"Error showing order page: {e}")
 
         
     def show_ordertracking_page(self):
@@ -72,10 +96,30 @@ class App(ctk.CTk):
     def show_account_page(self):
         self.clear_main_frame()
         CustomerAccountPage(self.main_frame, app=self).pack(fill="both", expand=True)
-
     
+    def show_adminHome_page(self):
+        self.clear_main_frame()
+        AdminHomePage(self.main_frame, app=self).pack(fill="both", expand=True)
 
+    def show_adminAddItem_page(self):
+        self.clear_main_frame()
+        AddItemPage(self.main_frame, app=self).pack(fill="both", expand=True)
 
+    def show_adminUpdateItem_page(self):
+        self.clear_main_frame()
+        UpdateItemPage(self.main_frame, app=self).pack(fill="both", expand=True)
+
+    def show_adminRemoveItem_page(self):
+        self.clear_main_frame()
+        RemoveItemPage(self.main_frame, app=self).pack(fill="both", expand=True)
+
+    def show_adminReports_page(self):
+        self.clear_main_frame()
+        ReportsPage(self.main_frame, app=self).pack(fill="both", expand=True)
+
+    def show_adminOrderTracking_page(self):
+        self.clear_main_frame()
+        AdminOrderTrackingPage(self.main_frame, app=self).pack(fill="both", expand=True)
 
 # Welcome Page Frame
 class WelcomePage(ctk.CTkFrame):
@@ -109,9 +153,27 @@ class WelcomePage(ctk.CTkFrame):
                                            command=switch_to_login)
         get_started_button.place(x=250, y=350)
 
+class ChangeHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        if event.src_path.endswith('.py'):
+            print(f'{event.src_path} has been modified. Restarting...')
+            os.execv(sys.executable, ['python'] + sys.argv)
+
 # Run the app
 if __name__ == "__main__":
-    ctk.set_appearance_mode("light")
-    ctk.set_default_color_theme("green")
-    app = App()
-    app.mainloop()
+    # Start the watchdog observer
+    path = '.'  # Directory to watch
+    event_handler = ChangeHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
+
+    try:
+        # Run the Tkinter app
+        ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("green")
+        app = App()
+        app.mainloop()
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
