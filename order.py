@@ -264,28 +264,20 @@ class OrderPage(ctk.CTkFrame):
         remove_btn.pack(side="right", padx=5)
 
     def remove_item(self, item_id):
-        if item_id in self.cart:
-            try:
+        try:
             if self.cart[item_id]["quantity"] > 1:
                 self.cart[item_id]["quantity"] -= 1
+                self.cart[item_id]["total"] = self.cart[item_id]["quantity"] * self.cart[item_id]["price"]
+                self.update_cart_display()
             else:
                 del self.cart[item_id]
-
-                if not self.cart:
-                    
-                    for widget in self.content_area.winfo_children():
-                widget.destroy()
-                    # Show empty cart
+                self.update_cart_display()
+                
+                if not self.cart:  # If cart becomes empty
                     self.show_empty_cart()
-                    # return to menu
-                    self.after(3000, self.app.show_menu_page)
-                else:
-                    # Refresh display
-                    self.load_cart_items()
-                    self.update_summary()
-
-            except Exception as e:
-                print(f"Error removing item: {e}")
+                    self.after(3000, self.return_to_menu)  # Return to menu after 3 seconds
+        except KeyError:
+            print(f"Error: Item {item_id} not found in cart")
 
     def place_order(self):
         try:

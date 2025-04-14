@@ -12,7 +12,7 @@ from admin_dashboard import AdminHomePage
 from admin_add_item import AddItemPage
 from admin_update_item import UpdateItemPage
 from admin_remove_item import RemoveItemPage
-from admin_reports import ReportsPage
+from admin_reports import ViewReportsPage
 from admin_order_tracking import AdminOrderTrackingPage
 # from admin_update_item import UpdateItemPage
 # from admin_remove_item import RemoveItemPage
@@ -115,7 +115,7 @@ class App(ctk.CTk):
 
     def show_adminReports_page(self):
         self.clear_main_frame()
-        ReportsPage(self.main_frame, app=self).pack(fill="both", expand=True)
+        ViewReportsPage(self.main_frame, app=self).pack(fill="both", expand=True)
 
     def show_adminOrderTracking_page(self):
         self.clear_main_frame()
