@@ -33,7 +33,7 @@ class NavigationHeader(ctk.CTkFrame):
         # About Us
         self.about_label = ctk.CTkLabel(nav_frame, text="About Us", cursor="hand2", font=("Poppins", 14),
                                         text_color="black")
-        self.about_label.bind("<Button-1>", lambda e: self.app.show_aboutus_page() if self.app else None)
+        self.about_label.bind("<Button-1>", lambda e: self.app.show_about_page() if self.app else None)
         self.about_label.pack(side="left", padx=20)
 
         # Contact Us
