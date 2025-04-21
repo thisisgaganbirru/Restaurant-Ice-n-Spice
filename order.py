@@ -267,15 +267,17 @@ class OrderPage(ctk.CTkFrame):
         try:
             if self.cart[item_id]["quantity"] > 1:
                 self.cart[item_id]["quantity"] -= 1
-                self.cart[item_id]["total"] = self.cart[item_id]["quantity"] * self.cart[item_id]["price"]
-                self.update_cart_display()
             else:
                 del self.cart[item_id]
-                self.update_cart_display()
-                
-                if not self.cart:  # If cart becomes empty
-                    self.show_empty_cart()
-                    self.after(3000, self.return_to_menu)  # Return to menu after 3 seconds
+            
+            # Reload the cart display
+            self.load_cart_items()
+            # Update the summary
+            self.update_summary()
+            
+            if not self.cart:  # If cart becomes empty
+                self.show_empty_cart()
+                self.after(3000, self.app.show_menu_page)  # Return to menu after 3 seconds
         except KeyError:
             print(f"Error: Item {item_id} not found in cart")
 

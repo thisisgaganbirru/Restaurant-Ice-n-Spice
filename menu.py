@@ -19,7 +19,7 @@ class MenuPage(ctk.CTkFrame):
         
         # Initialize tracking button
         self.tracking_btn = None
-        
+
         self.create_header()
         self.create_menu_body()
 
@@ -28,7 +28,6 @@ class MenuPage(ctk.CTkFrame):
         NavigationHeader(self, app=self.app).pack(side="top", fill="x")
 
     def create_menu_body(self):
-        
         self.body_frame = ctk.CTkFrame(self, fg_color="#EDEDED")
         self.body_frame.pack(fill="both", expand=True)
 
@@ -39,11 +38,30 @@ class MenuPage(ctk.CTkFrame):
         except Exception as e:
             print("[Background Error]", e)
 
+        # Search bar frame
         self.searchbar_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5")
         self.searchbar_frame.pack(fill="x")
 
+        # Category frame
+        self.category_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5")
+        self.category_frame.pack(fill="x")
+
+        # Content frame
         self.content_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5")
         self.content_frame.pack(fill="both", expand=True)
+
+        # Bottom label frame
+        bottom_frame = ctk.CTkFrame(self.body_frame, fg_color="#F9F0E5", height=30)
+        bottom_frame.pack(fill="x")
+        bottom_frame.pack_propagate(False)
+        
+        # Restaurant label
+        ctk.CTkLabel(
+            bottom_frame,
+            text="All rights reserved @icenspicerestaurant",
+            font=("Poppins", 12, "bold"),
+            text_color="black"
+        ).pack(expand=True)
 
         self.create_search_bar()
         self.create_category_filters()
@@ -89,24 +107,35 @@ class MenuPage(ctk.CTkFrame):
 
 
     def create_category_filters(self):
-        filter_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        filter_frame.pack(pady=(0, 0))
+        # Category label with larger font
+        ctk.CTkLabel(
+            self.category_frame, 
+            text="Category:", 
+            text_color="black",
+            font=("Poppins", 14, "bold")
+        ).pack(side="left", padx=(20, 10), pady=10)
 
-        ctk.CTkLabel(filter_frame, text="Category:", text_color="black").pack(side="left", padx=5)
+        # Create a frame for radio buttons
+        radio_frame = ctk.CTkFrame(self.category_frame, fg_color="#F9F0E5")
+        radio_frame.pack(side="left", fill="x", expand=True, pady=5)
+
         self.category_var = ctk.StringVar(value="All")
-
         categories = ["All", "Biryani", "Pizza", "Burger", "Desserts", "Beverages"]
+
         for cat in categories:
-            ctk.CTkRadioButton(
-                filter_frame, 
+            rb = ctk.CTkRadioButton(
+                radio_frame, 
                 text=cat,
                 value=cat, 
-                variable=self.category_var,
-                text_color="black", 
-                fg_color="#F1D94B",
+                               variable=self.category_var,
+                               text_color="black", 
+                               fg_color="#F1D94B", 
+                border_color="#F1D94B",
                 hover_color="#E5C63D",
+                font=("Poppins", 12),
                 command=self.create_product_display
-            ).pack(side="left", padx=5)
+            )
+            rb.pack(side="left", padx=5, pady=5)
 
 
     def create_product_display(self):
@@ -115,42 +144,60 @@ class MenuPage(ctk.CTkFrame):
         
         # Clear existing content
         for widget in self.content_frame.winfo_children():
-            if isinstance(widget, ctk.CTkFrame) and widget != self.searchbar_frame:
+            if isinstance(widget, ctk.CTkFrame):
                 widget.destroy()
 
-        if search_query:
-            # Create scrollable frame for search results
-            results_frame = ctk.CTkScrollableFrame(
-                self.content_frame, 
-                fg_color="transparent",
-                width=550,
-                height=500
-            )
-            results_frame.pack(fill="both", expand=True, padx=10, pady=10)
-            
-            query = "SELECT MenuID, name, description, price, imagePath FROM Menu"
-            menu_items = self.get_menu_items(query)
-            
-            if not menu_items:
-                ctk.CTkLabel(
-                    self.content_frame,
-                    text="No items match your search.",
-                    font=("Poppins", 14, "italic"),
-                    text_color="red"
-                ).pack(pady=20)
-                return
-            
-            for item in menu_items:
-                self.create_vertical_foodcards(item, parent_frame=results_frame)
-        else:
+        # If no search and category is "All", show default horizontal sections
+        if not search_query and selected_category == "All":
             self.multiple_scroll_sections()
+            return
+
+        # Create scrollable frame for filtered/search results
+        results_frame = ctk.CTkScrollableFrame(
+            self.content_frame, 
+            fg_color="transparent",
+            width=550,
+            height=500
+        )
+        results_frame.pack(fill="both", expand=True)
+        
+        # Build query based on category and search
+        query = "SELECT MenuID, name, description, price, imagePath FROM Menu"
+        params = []
+        where_clauses = []
+        
+        if selected_category != "All":
+            where_clauses.append("category = %s")
+            params.append(selected_category)
+        
+        if search_query:
+            where_clauses.append("LOWER(name) LIKE %s")
+            params.append(f"%{search_query}%")
+            
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+            
+        menu_items = self.get_menu_items(query, params)
+        
+        if not menu_items:
+            ctk.CTkLabel(
+                results_frame,
+                text="Couldn't find the item you're looking for.",
+                font=("Poppins", 14, "italic"),
+                text_color="red"
+            ).pack(pady=20)
+            return
+            
+        # Display items in vertical cards for search/filter results
+        for item in menu_items:
+            self.create_vertical_foodcards(item, parent_frame=results_frame)
 
 
     def multiple_scroll_sections(self):
-        
-        # --- MOST POPULAR SECTION ---
-        most_popular_frame = ctk.CTkFrame(self.content_frame, fg_color="#F9F0E5")
-        most_popular_frame.pack(fill="x", pady=(0, 5))
+        # Most Popular Section
+        most_popular_frame = ctk.CTkFrame(self.content_frame, fg_color="#F9F0E5", height=250)
+        most_popular_frame.pack(fill="x", pady=0)
+        most_popular_frame.pack_propagate(False)
 
         self.create_scroll(
             title="Most Popular",
@@ -158,9 +205,10 @@ class MenuPage(ctk.CTkFrame):
             parent=most_popular_frame
         )
 
-        # --- POPULAR LUNCH SECTION ---
-        lunch_frame = ctk.CTkFrame(self.content_frame, fg_color="#F9F0E5")
-        lunch_frame.pack(fill="x", pady=(0, 5))
+        # Popular Lunch Section
+        lunch_frame = ctk.CTkFrame(self.content_frame, fg_color="#F9F0E5", height=250)
+        lunch_frame.pack(fill="x", pady=0)
+        lunch_frame.pack_propagate(False)
 
         self.create_scroll(
             title="Popular Lunch",
@@ -178,92 +226,46 @@ class MenuPage(ctk.CTkFrame):
 
         
     def create_scroll(self, query, title, parent):
-        scroll_frame = ctk.CTkFrame(parent, fg_color="#F9F0E5", width=600, height=250)
-        scroll_frame.pack(pady=(0, 10), fill="x")
-        scroll_frame.pack_propagate(False)
-
-        self.lefticon = resize_image((30, 50), "images/expand-button_left.PNG")
-        self.righticon = resize_image((30, 50), "images/expand-button_right.PNG")
-
         # Title Label
-        title_label = ctk.CTkLabel(scroll_frame, text=title,
-            font=("Poppins", 16, "bold"), text_color="black",
-            anchor="w", justify="left")
-        title_label.pack(side="top", anchor="w", padx=20, pady=(5, 3))
-
-        # Main container for navigation and products
-        container_frame = ctk.CTkFrame(scroll_frame, fg_color="#F9F0E5", width=600, height=200)
-        container_frame.pack(fill="x", pady=(5, 2), padx=(5, 5))
-        container_frame.pack_propagate(False)
-
-        # LEFT BUTTON with border
-        left_btn_frame = ctk.CTkFrame(
-            container_frame, 
-            fg_color="white",
-            border_width=1,
-            border_color="#F1D94B",
-            width=32,
-            height=200,
-            corner_radius=0
+        title_label = ctk.CTkLabel(
+            parent,
+            text=title,
+            font=("Poppins", 16, "bold"),
+            text_color="black",
+            anchor="w",
+            justify="left"
         )
-        left_btn_frame.place(x=0, rely=0.5, anchor="w")
-        
-        left_btn = ctk.CTkButton(
-            left_btn_frame, 
-            text="", 
-            image=self.lefticon,
-            width=30,
-            height=200,
-            corner_radius=0,
-            fg_color="white",
-            hover_color="#E5DCD0",
-            command=lambda: self.scroll_left(product_frame)
-        )
-        left_btn.place(relx=0.5, rely=0.5, anchor="center")
+        title_label.pack(anchor="w", padx=20, pady=0)
 
-        # CENTER FRAME for products
-        center_frame = ctk.CTkFrame(container_frame, fg_color="#F9F0E5", width=540, height=200)
-        center_frame.place(relx=0.5, rely=0.5, anchor="center")
-
-        # PRODUCT SCROLLABLE FRAME
-        product_frame = ctk.CTkScrollableFrame(
-            center_frame, 
-            fg_color="#F9F0E5",
+        # Create horizontal scrollable frame
+        scroll_frame = ctk.CTkScrollableFrame(
+            parent,
             orientation="horizontal",
-            width=520,
-            height=200
+            fg_color="transparent",
+            height=220,
+            scrollbar_button_color="#F9F0E5",
+            scrollbar_button_hover_color="#F9F0E5",
+            scrollbar_fg_color="#F9F0E5"
         )
-        product_frame.pack(fill="both", anchor="center", expand=True)
-        product_frame._parent_canvas.configure(xscrollcommand=lambda *args: None)
-        product_frame._scrollbar.grid_forget()
+        scroll_frame.pack(fill="x", expand=True, padx=10, pady=0)
 
-        # RIGHT BUTTON with border
-        right_btn_frame = ctk.CTkFrame(
-            container_frame,
-            fg_color="white",
-            border_width=1,
-            border_color="#F1D94B",
-            width=32,
-            height=200,
-            corner_radius=0
-        )
-        right_btn_frame.place(x=600, rely=0.5, anchor="e")
-        
-        right_btn = ctk.CTkButton(
-            right_btn_frame,
-            text="",
-            image=self.righticon,
-            width=30,
-            height=200,
-            corner_radius=0,
-            fg_color="white",
-            hover_color="#E5DCD0",
-            command=lambda: self.scroll_right(product_frame)
-        )
-        right_btn.place(relx=0.5, rely=0.5, anchor="center")
+        # Bind mousewheel to horizontal scroll
+        def _on_mousewheel(event):
+            current_x = scroll_frame._scrollbar.get()[0]
+            # Determine scroll direction (-1 for up/left, 1 for down/right)
+            direction = -1 if event.delta > 0 else 1
+            scroll_amount = 50 * direction
+            new_x = max(0, min(1, current_x + (scroll_amount / scroll_frame._parent_canvas.winfo_width())))
+            scroll_frame._parent_canvas.xview_moveto(new_x)
 
-        # Load items into the scrollable frame
-        self.load_menu_items(query, parent_frame=product_frame)
+        # Bind to the frame and its children
+        scroll_frame.bind("<MouseWheel>", _on_mousewheel)
+        scroll_frame._parent_canvas.bind("<MouseWheel>", _on_mousewheel)
+
+        # Load items
+        menu_items = self.get_menu_items(query)
+        for item in menu_items:
+            self.create_food_card(item, scroll_frame)
 
 
     def load_menu_items(self, query,parent_frame=None):
@@ -284,28 +286,16 @@ class MenuPage(ctk.CTkFrame):
             self.create_food_card(item, parent_frame= parent_frame)
 
 
-    def get_menu_items(self, query):
+    def get_menu_items(self, query, params=None):
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor(dictionary=True)
-            filters = []
-            params = []
-
-            # Always check category first (unless it's "All")
-            if self.category_var.get() != "All":
-                filters.append("category = %s")
-                params.append(self.category_var.get())
-
-            # Then check search term
-            search = self.search_bar.get().strip().lower()
-            if search:
-                filters.append("LOWER(name) LIKE %s")
-                params.append(f"%{search}%")
-
-            if filters:
-                query += " WHERE " + " AND ".join(filters)
-
-            cursor.execute(query, params)
+            
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+                
             items = cursor.fetchall()
             cursor.close()
             conn.close()
@@ -315,98 +305,95 @@ class MenuPage(ctk.CTkFrame):
             return []
 
 
-    def create_food_card(self, item, parent_frame=None):
-        # Create a single frame to hold the card
+    def create_food_card(self, item, parent_frame):
+        # Card container
         card = ctk.CTkFrame(
             parent_frame,
             fg_color="white",
             width=350,
-            height=200,
+            height=180,
             corner_radius=10,
             border_width=2,
             border_color="#F1D94B"
         )
-        card.pack(side="left", padx=10, pady=5, anchor="center")
+        card.pack(side="left", padx=8, pady=2)
         card.pack_propagate(False)
 
-        # Image Frame using place
-        image_frame = ctk.CTkFrame(card, fg_color="white", width=140, height=180)
-        image_frame.place(x=15, y=20)
+        # Image Frame (Left)
+        image_frame = ctk.CTkFrame(card, fg_color="white", width=140, height=160)
+        image_frame.place(x=10, y=10)
+        image_frame.pack_propagate(False)
 
         try:
-            menu_img = resize_image((180, 180), item["imagePath"])
+            menu_img = resize_image((150, 150), item["imagePath"])
             self.image_refs.append(menu_img)
             ctk.CTkLabel(image_frame, image=menu_img, text="").pack(expand=True)
         except Exception as e:
             print("Image Error:", e)
             ctk.CTkLabel(image_frame, text="Image not found", font=("poppins", 10, "italic")).pack(padx=10)
 
-        # Details Frame using place
-        details_frame = ctk.CTkFrame(card, fg_color="white", width=180, height=120)
-        details_frame.place(x=160, y=20)
+        # Details Frame (Right)
+        details_frame = ctk.CTkFrame(card, fg_color="white", width=180, height=100)
+        details_frame.place(x=160, y=10)
         details_frame.pack_propagate(False)
 
-        # Name label (truncated if > 15 words)
+        # Name label
         name_text = item["name"]
-        words = name_text.split()
-        if len(words) > 15:
-            name_text = " ".join(words[:15]) + "..."
+        if len(name_text) > 50:
+            name_text = name_text[:47] + "..."
 
         name_label = ctk.CTkLabel(
-            details_frame, 
+            details_frame,
             text=name_text,
-            font=("Inter", 16, "bold"), 
-            text_color="black", 
-            wraplength=180, 
-            anchor="w", 
+            font=("Inter", 14, "bold"),
+            text_color="black",
+            wraplength=180,
+            anchor="w",
             justify="left"
         )
-        name_label.pack(anchor="w", fill="x", padx=10)
+        name_label.pack(anchor="w", fill="x", padx=5, pady=(0,2))
 
-        # Description (truncated)
-        description_text = item["description"]
-        if len(description_text) > 50:
-            description_text = description_text[:47] + "..."
+        # Description
+        if "description" in item and item["description"]:
+            description_text = item["description"][:47] + "..." if len(item["description"]) > 50 else item["description"]
+            ctk.CTkLabel(
+                details_frame,
+                text=description_text,
+                font=("Inter", 10),
+                text_color="gray",
+                wraplength=160,
+                anchor="w",
+                justify="left"
+            ).pack(anchor="w", fill="x", padx=5, pady=(0,2))
 
-        description_label = ctk.CTkLabel(
-            details_frame, 
-            text=description_text,
-            font=("Inter", 11), 
-            text_color="gray",
-            wraplength=160, 
-            anchor="w", 
-            justify="left"
-        )
-        description_label.pack(anchor="w", fill="x", padx=10, pady=(5, 10))
-
-        # Price (always visible)
-        price_label = ctk.CTkLabel(
-            details_frame, 
+        # Price label
+        ctk.CTkLabel(
+            details_frame,
             text=f"$ {item['price']}",
-            font=("Inter", 16, "bold"), 
-            text_color="black", 
-            anchor="w", 
+            font=("Inter", 14, "bold"),
+            text_color="black",
+            anchor="w",
             justify="left"
-        )
-        price_label.pack(anchor="w", fill="x", padx=10)
+        ).pack(anchor="w", fill="x", padx=5)
 
-        # Button Frame using place
-        button_frame = ctk.CTkFrame(card, fg_color="white", width=180, height=50)
+        # Button Frame
+        button_frame = ctk.CTkFrame(card, fg_color="white", width=180, height=40)
         button_frame.place(x=160, y=120)
         button_frame.pack_propagate(False)
 
         # Add to Cart Button
         add_button = ctk.CTkButton(
-            button_frame, 
+            button_frame,
             text="Add to Cart",
-            fg_color="#F1D94B", 
-            text_color="black", 
+            fg_color="#F1D94B",
+            text_color="black",
+            hover_color="#E5C63D",
             width=150,
-            height=30,
-            corner_radius=0,
-            command=lambda: self.update_cart(item, 1, add_button)
+            height=28,
+            corner_radius=5,
+            command=lambda: self.update_cart(item, 1, button_frame)
         )
-        add_button.pack(pady=10, padx=15)
+        add_button.pack(pady=5, padx=15)
 
 
     def show_search_results(self, search_query):
@@ -448,7 +435,7 @@ class MenuPage(ctk.CTkFrame):
             border_width=2,
             border_color="#F1D94B"
         )
-        Verticalcard.pack(pady=10, padx=10)
+        Verticalcard.pack(fill="x", pady=10, padx=10)
         Verticalcard.pack_propagate(False)
 
         # Image Frame (50% width)
@@ -476,8 +463,8 @@ class MenuPage(ctk.CTkFrame):
         ctk.CTkLabel(
             details_section,
             text=item["name"],
-            font=("Inter", 16, "bold"),
-            text_color="black",
+            font=("Inter", 16, "bold"), 
+            text_color="black", 
             wraplength=250,
             anchor="w"
         ).pack(fill="x", padx=10, pady=(10,5))
@@ -494,8 +481,8 @@ class MenuPage(ctk.CTkFrame):
         ctk.CTkLabel(
             details_section,
             text=f"$ {item['price']}",
-            font=("Inter", 16, "bold"),
-            text_color="black",
+            font=("Inter", 16, "bold"), 
+            text_color="black", 
             anchor="w"
         ).pack(fill="x", padx=10, pady=5)
 
@@ -504,10 +491,10 @@ class MenuPage(ctk.CTkFrame):
         button_frame.pack(fill="x")
         
         add_button = ctk.CTkButton(
-            button_frame,
+            button_frame, 
             text="Add to Cart",
-            fg_color="#F1D94B",
-            text_color="black",
+            fg_color="#F1D94B", 
+            text_color="black", 
             width=150,
             height=30,
             corner_radius=5,
@@ -518,18 +505,17 @@ class MenuPage(ctk.CTkFrame):
     def create_floating_tracking_button(self):
         """Creates a floating tracking button at bottom right"""
         if self.has_pending_orders():
-            # Create a frame for the floating button
             floating_frame = ctk.CTkFrame(
-                self.content_frame,  # Changed from body_frame to content_frame
+                self.content_frame,
                 fg_color="transparent",
                 width=120,
-                height=40
+                height=40,
+                corner_radius=20
             )
             floating_frame.place(relx=0.95, rely=0.95, anchor="se")
             
-            # Shadow effect
             shadow_frame = ctk.CTkFrame(
-                self.content_frame,  # Changed from body_frame to content_frame
+                self.content_frame,
                 fg_color="#d0cccc",
                 corner_radius=20,
                 width=120,
@@ -537,7 +523,6 @@ class MenuPage(ctk.CTkFrame):
             )
             shadow_frame.place(relx=0.952, rely=0.955, anchor="se")
             
-            # Tracking button
             tracking_btn = ctk.CTkButton(
                 floating_frame,
                 text="Track Order",
@@ -552,10 +537,7 @@ class MenuPage(ctk.CTkFrame):
             )
             tracking_btn.pack(side="right")
             
-            # Store reference to the button
             self.tracking_btn = tracking_btn
-            
-            # Bring button to front
             floating_frame.lift()
 
     def update_cart(self, item, change, button_container):
