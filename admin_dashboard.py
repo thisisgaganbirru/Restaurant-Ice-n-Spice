@@ -95,6 +95,10 @@ class AdminDashboard(ctk.CTkFrame):
         # Load initial items
         self.load_menu_items()
 
+        self.current_category = "All"  # Default category
+
+        self.category_dropdown = None  # Initialize category dropdown
+
     def create_header_and_subframe(self, parent):
         # Main frame
         main_frame = ctk.CTkFrame(parent, fg_color="transparent", height=100)
@@ -121,14 +125,28 @@ class AdminDashboard(ctk.CTkFrame):
 
         # Search bar
         search_var = ctk.StringVar()
-        search_var.trace("w", lambda *args: self.filter_items())
         search_entry = ctk.CTkEntry(
             subframe,
             placeholder_text="Search menu items...",
+            textvariable=search_var,
             width=200,
             height=35
         )
         search_entry.pack(side="left", padx=(0, 10))
+
+        # Search button
+        search_button = ctk.CTkButton(
+            subframe,
+            text="Search",
+            font=("Poppins", 12),
+            fg_color="#F1D94B",
+            text_color="black",
+            hover_color="#E5CE45",
+            width=100,
+            height=35,
+            command=lambda: self.filter_items(search_var.get())
+        )
+        search_button.pack(side="left", padx=(0, 10))
 
         # Filter button
         filter_button = ctk.CTkButton(
@@ -368,8 +386,8 @@ class AdminDashboard(ctk.CTkFrame):
         self.current_page += 1
         self.load_menu_items(clear=False)
 
-    def filter_items(self, *args):
-        search_term = self.search_entry.get().strip().lower()
+    def filter_items(self, search_term=""):
+        search_term = search_term.strip().lower()
 
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
@@ -530,7 +548,7 @@ class AdminDashboard(ctk.CTkFrame):
             description = self.entries["description"].get().strip()
             price = self.entries["price"].get().strip()
             category = self.entries["category"].get().strip()
-            imagePath = self.entries["imagePath"].get().strip()
+            imagePath = self.entries["ImagePath"].get().strip()
 
             # Validate required fields
             if not all([name, description, price, category, imagePath]):
@@ -717,32 +735,26 @@ class AdminDashboard(ctk.CTkFrame):
             return None
 
     def show_category_dropdown(self):
+        # Destroy existing dropdown if it exists
         if self.category_dropdown and self.category_dropdown.winfo_exists():
             self.category_dropdown.destroy()
+            self.category_dropdown = None
             return
 
-        # Get categories from database
+        # Get categories from the database
         categories = self.get_categories()
 
-        # Create dropdown frame with width and height in constructor
+        # Create dropdown frame
         self.category_dropdown = ctk.CTkFrame(
             self.category_frame,
-                fg_color="white",
+            fg_color="white",
             corner_radius=8,
             border_width=1,
-                border_color="#E0E0E0",
-            width=150,  # Set width in constructor
-            height=len(categories) * 35 + 35  # Height based on number of items
+            border_color="#E0E0E0",
+            width=150,
+            height=len(categories) * 35 + 35  # Adjust height based on number of categories
         )
-
-        # Position the dropdown below the filter button
-        button_x = self.category_frame.winfo_x()
-        button_y = self.category_frame.winfo_y()
-        self.category_dropdown.place(
-            relx=1,
-            rely=1,
-            anchor="ne"
-        )
+        self.category_dropdown.place(relx=1, rely=1, anchor="ne")  # Position below the filter button
 
         # Add "All" option
         self.create_dropdown_item("All", self.category_dropdown)
@@ -783,6 +795,7 @@ class AdminDashboard(ctk.CTkFrame):
         self.current_category = category
         if self.category_dropdown:
             self.category_dropdown.destroy()
+            self.category_dropdown = None
 
         # Update filter button text to show selected category
         self.filter_btn.configure(text=f"Filter: {category}")
@@ -805,4 +818,4 @@ class AdminDashboard(ctk.CTkFrame):
             return categories
         except mysql.connector.Error as err:
             print(f"Database Error: {err}")
-            return []
+            return []  # Return an empty list if there's an error

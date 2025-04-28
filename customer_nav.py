@@ -48,3 +48,14 @@ class NavigationHeader(ctk.CTkFrame):
                                           text_color="black")
         self.account_label.bind("<Button-1>", lambda e: self.app.show_account_page() if self.app else None)
         self.account_label.pack(side="left", padx=20)
+
+        # Logout
+        self.logout_label = ctk.CTkLabel(nav_frame, text="Logout", cursor="hand2", font=("Poppins", 14),
+                                         text_color="red")
+        self.logout_label.bind("<Button-1>", lambda e: self.logout())
+        self.logout_label.pack(side="left", padx=20)
+
+    def logout(self):
+        # Clear user session or perform any logout logic
+        print("User logged out")  # Debugging message
+        self.app.show_login()  # Switch to the login page

@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 import matplotlib.colors as mcolors
 from matplotlib.patches import Patch
-import traceback  # Add this at the top of the file
+import numpy as np
 
 class fetchHeatmapGraph:
     def __init__(self):
