@@ -4,3 +4,188 @@
 2025-04-20 02:54:43,412 - AdminSupport - INFO - Logging initialized
 2025-04-20 03:26:43,404 - AdminSupport - INFO - Logging initialized
 2025-04-20 03:30:24,299 - AdminSupport - INFO - Logging initialized
+2025-04-21 13:56:13,799 - AdminSupport - INFO - Logging initialized
+2025-04-21 13:56:20,716 - AdminSupport - INFO - Logging initialized
+2025-04-21 13:56:20,716 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:03:22,916 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:03:46,177 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:03:46,177 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:07:37,291 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:07:52,919 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:07:52,919 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:18:01,857 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:23:20,721 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:28:31,599 - AdminSupport - INFO - Logging initialized
+2025-04-21 14:33:16,531 - AdminSupport - INFO - Logging initialized
+2025-04-21 16:21:12,373 - AdminSupport - INFO - Logging initialized
+2025-04-22 13:56:52,925 - AdminSupport - INFO - Logging initialized
+2025-04-22 14:00:59,854 - AdminSupport - INFO - Logging initialized
+2025-04-22 14:01:23,225 - AdminSupport - INFO - Logging initialized
+2025-04-22 14:01:23,225 - AdminSupport - INFO - Logging initialized
+2025-04-22 15:52:01,972 - AdminSupport - INFO - Logging initialized
+2025-04-26 12:46:44,985 - AdminSupport - INFO - Logging initialized
+2025-04-26 12:46:44,986 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 12:46:45,007 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 12:46:45,183 - AdminSupport - INFO - Found 4 messages
+2025-04-26 12:46:52,617 - AdminSupport - INFO - Opening message dialog for message ID: 4
+2025-04-26 12:49:14,327 - AdminSupport - INFO - Logging initialized
+2025-04-26 12:49:14,327 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 12:49:14,354 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 12:49:14,527 - AdminSupport - INFO - Found 4 messages
+2025-04-26 12:49:50,936 - AdminSupport - INFO - Opening message dialog for message ID: 4
+2025-04-26 13:12:04,327 - AdminSupport - INFO - Logging initialized
+2025-04-26 13:12:04,327 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 13:12:04,365 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 13:12:04,535 - AdminSupport - INFO - Found 4 messages
+2025-04-26 13:12:06,749 - AdminSupport - INFO - Opening message dialog for message ID: 4
+2025-04-26 14:03:24,358 - AdminSupport - INFO - Logging initialized
+2025-04-26 14:03:24,359 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 14:53:07,276 - AdminSupport - INFO - Logging initialized
+2025-04-26 14:53:07,277 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 14:53:07,334 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 14:53:07,514 - AdminSupport - INFO - Found 4 messages
+2025-04-26 14:53:10,438 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 14:53:10,611 - AdminSupport - INFO - Found 0 messages
+2025-04-26 14:53:12,149 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 14:53:12,330 - AdminSupport - INFO - Found 0 messages
+2025-04-26 14:53:13,544 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 14:53:13,719 - AdminSupport - INFO - Found 4 messages
+2025-04-26 14:59:46,533 - AdminSupport - INFO - Logging initialized
+2025-04-26 14:59:46,534 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 14:59:46,587 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 14:59:46,760 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:09:31,143 - AdminSupport - INFO - Logging initialized
+2025-04-26 15:09:31,143 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 15:09:31,199 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:09:31,382 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:09:37,176 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 15:09:37,352 - AdminSupport - INFO - Found 0 messages
+2025-04-26 15:09:39,229 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 15:09:39,403 - AdminSupport - INFO - Found 0 messages
+2025-04-26 15:09:40,656 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:09:40,831 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:09:42,596 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 15:09:42,779 - AdminSupport - INFO - Found 0 messages
+2025-04-26 15:09:44,765 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 15:09:44,945 - AdminSupport - INFO - Found 0 messages
+2025-04-26 15:09:47,097 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:09:47,281 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:25:19,568 - AdminSupport - INFO - Logging initialized
+2025-04-26 15:25:19,568 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 15:25:19,621 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:25:19,794 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:37:55,285 - AdminSupport - INFO - Logging initialized
+2025-04-26 15:37:55,285 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 15:40:57,662 - AdminSupport - INFO - Logging initialized
+2025-04-26 15:40:57,662 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 15:40:57,731 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:40:57,902 - AdminSupport - INFO - Found 4 messages
+2025-04-26 15:42:04,449 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 15:42:04,626 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:05:42,191 - AdminSupport - INFO - Logging initialized
+2025-04-26 16:05:42,191 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 16:05:42,251 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:05:42,432 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:16:52,032 - AdminSupport - INFO - Logging initialized
+2025-04-26 16:16:52,033 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 16:16:52,162 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:16:54,612 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:20:42,711 - AdminSupport - INFO - Logging initialized
+2025-04-26 16:20:42,711 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 16:20:42,812 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:20:42,996 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:40:30,863 - AdminSupport - INFO - Logging initialized
+2025-04-26 16:40:30,863 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 16:40:30,954 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:40:34,421 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:53:28,203 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:53:28,385 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:53:39,204 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:53:41,644 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:53:47,174 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 16:53:48,972 - AdminSupport - INFO - Found 2 messages
+2025-04-26 16:53:51,115 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:53:53,506 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:54:06,128 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:54:08,189 - AdminSupport - INFO - Found 4 messages
+2025-04-26 16:54:17,375 - AdminSupport - INFO - Updating message list: sort=newest, filter=unread
+2025-04-26 16:54:17,481 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:54:19,477 - AdminSupport - INFO - Found 2 messages
+2025-04-26 16:54:24,125 - AdminSupport - INFO - Updating message list: sort=newest, filter=read
+2025-04-26 16:54:24,182 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:54:26,603 - AdminSupport - INFO - Found 2 messages
+2025-04-26 16:54:30,817 - AdminSupport - INFO - Updating message list: sort=newest, filter=all
+2025-04-26 16:54:30,859 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 16:54:35,400 - AdminSupport - INFO - Found 4 messages
+2025-04-26 17:43:00,558 - AdminSupport - INFO - Logging initialized
+2025-04-26 17:43:00,559 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 17:43:00,670 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 17:43:00,846 - AdminSupport - INFO - Found 2 messages
+2025-04-26 17:43:04,632 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 17:43:06,281 - AdminSupport - INFO - Found 0 messages
+2025-04-26 17:43:09,065 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 17:43:11,332 - AdminSupport - INFO - Found 2 messages
+2025-04-26 17:43:13,348 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 17:43:15,393 - AdminSupport - INFO - Found 2 messages
+2025-04-26 17:48:37,972 - AdminSupport - INFO - Logging initialized
+2025-04-26 17:48:37,973 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 17:48:38,088 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 17:48:38,268 - AdminSupport - INFO - Found 2 messages
+2025-04-26 18:00:07,657 - AdminSupport - INFO - Logging initialized
+2025-04-26 18:00:07,658 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 18:00:07,818 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 18:00:10,174 - AdminSupport - INFO - Found 2 messages
+2025-04-26 19:21:50,964 - AdminSupport - INFO - Logging initialized
+2025-04-26 19:21:50,965 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 19:21:51,191 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 19:21:52,960 - AdminSupport - INFO - Found 2 messages
+2025-04-26 19:26:18,528 - AdminSupport - INFO - Logging initialized
+2025-04-26 19:26:18,528 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 19:26:18,603 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 19:26:18,774 - AdminSupport - INFO - Found 2 messages
+2025-04-26 19:37:39,181 - AdminSupport - INFO - Logging initialized
+2025-04-26 19:37:39,181 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 19:37:39,244 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 19:37:39,424 - AdminSupport - INFO - Found 1 messages
+2025-04-26 19:37:48,372 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 19:37:48,550 - AdminSupport - INFO - Found 1 messages
+2025-04-26 19:37:50,301 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-26 19:37:50,478 - AdminSupport - INFO - Found 3 messages
+2025-04-26 19:38:28,590 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 19:38:28,765 - AdminSupport - INFO - Found 1 messages
+2025-04-26 19:38:31,797 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 19:38:31,971 - AdminSupport - INFO - Found 1 messages
+2025-04-26 19:38:39,835 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-26 19:38:40,018 - AdminSupport - INFO - Found 1 messages
+2025-04-26 19:41:59,158 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 19:41:59,345 - AdminSupport - INFO - Found 1 messages
+2025-04-26 23:36:10,504 - AdminSupport - INFO - Logging initialized
+2025-04-26 23:36:10,504 - AdminSupport - INFO - Email configuration loaded
+2025-04-26 23:36:10,576 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-26 23:36:10,850 - AdminSupport - INFO - Found 1 messages
+2025-04-27 16:08:25,209 - AdminSupport - INFO - Logging initialized
+2025-04-27 16:08:25,211 - AdminSupport - INFO - Email configuration loaded
+2025-04-27 16:08:25,380 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 16:08:27,075 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:37:08,141 - AdminSupport - INFO - Logging initialized
+2025-04-27 17:37:08,142 - AdminSupport - INFO - Email configuration loaded
+2025-04-27 17:37:08,202 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 17:37:08,473 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:44:57,726 - AdminSupport - INFO - Logging initialized
+2025-04-27 17:44:57,727 - AdminSupport - INFO - Email configuration loaded
+2025-04-27 17:44:57,789 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 17:44:58,057 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:45:20,367 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-27 17:45:20,640 - AdminSupport - INFO - Found 3 messages
+2025-04-27 17:45:34,758 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 17:45:35,021 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:45:35,977 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-27 17:45:36,244 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:45:57,092 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 17:45:57,356 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:46:12,596 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-27 17:46:12,860 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:46:14,144 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-27 17:46:14,408 - AdminSupport - INFO - Found 1 messages
+2025-04-27 17:47:28,275 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-27 17:47:28,550 - AdminSupport - INFO - Found 3 messages

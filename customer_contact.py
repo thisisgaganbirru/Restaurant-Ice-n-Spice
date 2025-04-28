@@ -1,18 +1,20 @@
 import customtkinter as ctk
 from utils import resize_image
-from headerNav import NavigationHeader
+from customer_nav import NavigationHeader
 import mysql.connector
 from dbconnection import DB_CONFIG
 
 class ContactPage(ctk.CTkFrame):
-    def __init__(self, parent, app=None):
+    def __init__(self, parent, app=None, user=None):
         super().__init__(parent)
         self.app = app
+        self.user = user
+
         self.configure(width=600, height=700, fg_color="transparent")
         self.create_contact_page()
 
     def create_contact_page(self):
-        NavigationHeader(self, app=self.app).pack(side="top", fill="x")
+        NavigationHeader(self, app=self.app, user=self.user).pack(side="top", fill="x")
 
         self.body_frame = ctk.CTkFrame(self, fg_color="#EDEDED")
         self.body_frame.pack(fill="both", expand=True)
@@ -24,37 +26,40 @@ class ContactPage(ctk.CTkFrame):
         except Exception as e:
             print("[Background Error]", e)
 
-        # Content frame
+        # Main content frame - Exactly 500x500
         content_frame = ctk.CTkFrame(
             self.body_frame, 
             fg_color="#F9F0E5", 
-            height=500, 
-            width=500,
-            corner_radius=0
+            height=550, 
+            width=550,
+            corner_radius=0,
+            border_width=1,
+            border_color="#E0E0E0"
         )
-        content_frame.pack(expand=True)
+        content_frame.place(relx=0.5, rely=0.5, anchor="center")
         content_frame.pack_propagate(False)
 
-        # Main split frame
+        # Main split frame with padding
         main_split_frame = ctk.CTkFrame(
             content_frame, 
             fg_color="transparent",
-            width=500,
-            height=500
+            width=530,
+            height=530
         )
-        main_split_frame.pack(fill="both", expand=True)
+        main_split_frame.place(relx=0.5, rely=0.5, anchor="center")
 
         # Image frame (Left side)
         image_frame = ctk.CTkFrame(
             main_split_frame, 
             fg_color="#FFFFFF", 
-            width=230, height=520
+            width=200, height=530,
+            corner_radius=0
         )
         image_frame.pack(side="left", fill="y")
         image_frame.pack_propagate(False)
 
         try:
-            contact_img = resize_image((350, 600), "images/food contactus.jpg")
+            contact_img = resize_image((400, 850), "images/food contactus.jpg")
             ctk.CTkLabel(image_frame, image=contact_img, text="").pack(expand=True)
         except Exception as e:
             print("Image Error:", e)
@@ -62,52 +67,65 @@ class ContactPage(ctk.CTkFrame):
         # Form container frame (Right side)
         form_container = ctk.CTkFrame(
             main_split_frame, 
-            fg_color="transparent", 
-            width=300,
-            height=500
+            fg_color="#FFFFFF", 
+            width=330,
+            height=530,
+            corner_radius=0
         )
-        form_container.pack(side="right", fill="both")
+        form_container.pack(side="right", fill="both", expand=True)
         form_container.pack_propagate(False)
 
-        # Mail form frame
+        # Top 70% - Mail form frame
         mail_frame = ctk.CTkFrame(
             form_container, 
             fg_color="#FFFFFF",
-            corner_radius=0
+            corner_radius=0,
+            height=400  # 70% of 470
         )
-        mail_frame.pack(fill="both", expand=True)
+        mail_frame.pack(fill="x")
+        # mail_frame.pack_propagate(False)
 
-        # Title and Message Section
+        # Title and Message Section with accent
         title_frame = ctk.CTkFrame(
             mail_frame, 
             fg_color="#FFFFFF",
             corner_radius=0
         )
-        title_frame.pack(fill="x")
+        title_frame.pack(fill="x", pady=(20, 0))
 
         ctk.CTkLabel(
             title_frame,
             text="Have any Questions?",
             font=("Poppins", 20, "bold"),
             text_color="black"
-        ).pack(pady=(10,0))
+        ).pack(anchor="w", padx=20)
+        
+        # Yellow accent line
+        accent_line = ctk.CTkFrame(
+            title_frame,
+            fg_color="#F1D94B",
+            height=3,
+            width=30,
+            corner_radius=0
+        )
+        accent_line.pack(anchor="w", padx=20, pady=(0, 10))
 
         ctk.CTkLabel(
             title_frame,
             text="Send us a message below\n"
-              "we’ll get right back to you.",
+              "we'll get right back to you.",
             font=("Poppins", 12, "italic"),
             text_color="black"
-        ).pack(pady=(0,2))
+        ).pack(anchor="w", padx=20)
 
         # Message display frame
         self.message_display_frame = ctk.CTkFrame(
             title_frame, 
-            fg_color="#FFFFFF",
-            height=10,
+            fg_color="#FAFAFA",
+            height=20,
             corner_radius=0
         )
-        self.message_display_frame.pack(fill="x", pady=1)
+        self.message_display_frame.pack(fill="x", padx=20, pady=10)
 
         # Form Section
         form = ctk.CTkFrame(
@@ -115,7 +133,7 @@ class ContactPage(ctk.CTkFrame):
             fg_color="transparent",
             corner_radius=0
         )
-        form.pack(fill="both", expand=True, padx=10)
+        form.pack(fill="both", expand=True, padx=20)
 
         # Get user information using username
         user_info = self.get_user_info()
@@ -125,12 +143,12 @@ class ContactPage(ctk.CTkFrame):
             form, 
             text="Name:", 
             anchor="w", 
-            font=("Poppins", 12)
+            font=("Poppins", 13, "bold")
         ).pack(fill="x", pady=(5,0))
         
         self.name_entry = ctk.CTkEntry(
             form,
-            height=20,
+            height=30,
             fg_color="white",
             border_color="#E0E0E0",
             border_width=1,
@@ -145,7 +163,7 @@ class ContactPage(ctk.CTkFrame):
             form, 
             text="Email:", 
             anchor="w", 
-            font=("Poppins", 12)
+            font=("Poppins", 13, "bold")
         ).pack(fill="x", pady=(5,0))
         
         self.email_entry = ctk.CTkEntry(
@@ -165,7 +183,7 @@ class ContactPage(ctk.CTkFrame):
             form, 
             text="Message:", 
             anchor="w", 
-            font=("Poppins", 12)
+            font=("Poppins", 13, "bold")
         ).pack(fill="x", pady=(5,0))
         
         self.message_entry = ctk.CTkTextbox(
@@ -188,13 +206,22 @@ class ContactPage(ctk.CTkFrame):
             corner_radius=0,
             command=self.submit_form
         )
-        self.submit_btn.pack(pady=5)
+        self.submit_btn.pack(anchor="center", pady=5)
 
-        # Footer frame
+        # Divider line
+        divider = ctk.CTkFrame(
+            form_container,
+            fg_color="#E5E5E5",
+            height=1,
+            corner_radius=0
+        )
+        divider.pack(fill="x")
+        
+        # Bottom 30% - Footer frame
         footer_frame = ctk.CTkFrame(
             form_container, 
             fg_color="#FFFFFF", 
-            height=100,
+            height=130,  
             corner_radius=0
         )
         footer_frame.pack(fill="x")
@@ -203,33 +230,34 @@ class ContactPage(ctk.CTkFrame):
         ctk.CTkLabel(
             footer_frame,
             text="------Or------",
-            font=("Poppins", 8, "bold"),
-            text_color="black"
-        ).pack(expand=True)
+            font=("Poppins", 12),
+            text_color="#999999"
+        ).pack(anchor="center")
 
         ctk.CTkLabel(
             footer_frame,
             text="reach us on",
-            font=("Poppins", 12, "italic"),
+            font=("Poppins", 13, "italic"),
             text_color="black"
-        ).pack(expand=True)
+        ).pack(pady=(5, 5))
+
+        # Contact details with centered alignment
+        contact_frame = ctk.CTkFrame(
+            footer_frame,
+            fg_color="transparent",
+            corner_radius=0
+        )
+        contact_frame.pack(fill="both", expand=True)
 
         ctk.CTkLabel(
-            footer_frame,
-            text="📞 Phone: +1 (123) 456-7890\n"
+            contact_frame,
+            text=
+            "📞 Phone: +1 (123) 456-7890\n"
             "📧 Email: support@iceandspice.com\n"
             "📍 Address: 123 Food Street, Flavor Town",
-            font=("Poppins", 12),
+            font=("Poppins", 13),
             text_color="black"
-        ).pack(expand=True)
-
-        # Restaurant handle
-        ctk.CTkLabel(
-            footer_frame,
-            text="@icenspicerestaurant",
-            font=("Poppins", 12, "bold"),
-            text_color="black"
-        ).pack(expand=True)
+        ).pack()
 
     def get_user_info(self):
         try:

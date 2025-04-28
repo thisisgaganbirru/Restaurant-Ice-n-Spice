@@ -2,9 +2,9 @@ import customtkinter as ctk
 from utils import resize_image
 import mysql.connector
 from dbconnection import DB_CONFIG
-from headerNav import NavigationHeader
-from ordertracking import OrderTrackingPage
-from order import OrderPage
+from customer_nav import NavigationHeader
+from customer_ordertracking import OrderTrackingPage
+from customer_order import OrderPage
 
 class MenuPage(ctk.CTkFrame):
     def __init__(self, parent, app, user=None):
@@ -25,7 +25,7 @@ class MenuPage(ctk.CTkFrame):
 
 
     def create_header(self):
-        NavigationHeader(self, app=self.app).pack(side="top", fill="x")
+        NavigationHeader(self, app=self.app, user=self.user).pack(side="top", fill="x")
 
     def create_menu_body(self):
         self.body_frame = ctk.CTkFrame(self, fg_color="#EDEDED")
@@ -112,8 +112,8 @@ class MenuPage(ctk.CTkFrame):
             self.category_frame, 
             text="Category:", 
             text_color="black",
-            font=("Poppins", 14, "bold")
-        ).pack(side="left", padx=(20, 10), pady=10)
+            font=("Poppins", 12, "bold")
+        ).pack(side="left", padx=(10, 10), pady=10)
 
         # Create a frame for radio buttons
         radio_frame = ctk.CTkFrame(self.category_frame, fg_color="#F9F0E5")
@@ -127,15 +127,15 @@ class MenuPage(ctk.CTkFrame):
                 radio_frame, 
                 text=cat,
                 value=cat, 
-                               variable=self.category_var,
-                               text_color="black", 
-                               fg_color="#F1D94B", 
+                variable=self.category_var,
+                text_color="black", 
+                fg_color="#F1D94B", 
                 border_color="#F1D94B",
                 hover_color="#E5C63D",
                 font=("Poppins", 12),
                 command=self.create_product_display
             )
-            rb.pack(side="left", padx=5, pady=5)
+            rb.pack(side="left", padx=2, pady=5)
 
 
     def create_product_display(self):
@@ -251,16 +251,11 @@ class MenuPage(ctk.CTkFrame):
 
         # Bind mousewheel to horizontal scroll
         def _on_mousewheel(event):
-            current_x = scroll_frame._scrollbar.get()[0]
-            # Determine scroll direction (-1 for up/left, 1 for down/right)
-            direction = -1 if event.delta > 0 else 1
-            scroll_amount = 50 * direction
-            new_x = max(0, min(1, current_x + (scroll_amount / scroll_frame._parent_canvas.winfo_width())))
-            scroll_frame._parent_canvas.xview_moveto(new_x)
+            scroll_frame._parent_canvas.xview_scroll(-1 * (event.delta // 60), "units")  # Increased scroll speed
 
-        # Bind to the frame and its children
-        scroll_frame.bind("<MouseWheel>", _on_mousewheel)
-        scroll_frame._parent_canvas.bind("<MouseWheel>", _on_mousewheel)
+        # Bind the event to the scrollable frame
+        scroll_frame.bind("<Enter>", lambda e: scroll_frame.bind_all("<MouseWheel>", _on_mousewheel))
+        scroll_frame.bind("<Leave>", lambda e: scroll_frame.unbind_all("<MouseWheel>"))
 
         # Load items
         menu_items = self.get_menu_items(query)
@@ -533,7 +528,7 @@ class MenuPage(ctk.CTkFrame):
                 width=120,
                 height=40,
                 corner_radius=20,
-                command=self.app.show_ordertracking_page
+                command=self.app.show_order_tracking_page  # Updated command
             )
             tracking_btn.pack(side="right")
             

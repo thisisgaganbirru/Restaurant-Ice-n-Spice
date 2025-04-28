@@ -1,16 +1,17 @@
 import customtkinter as ctk
 from utils import resize_image
-from headerNav import NavigationHeader
+from customer_nav import NavigationHeader
 import mysql.connector
 from dbconnection import DB_CONFIG
-from orderhistory import OrderHistory
+from customer_orderhistory import OrderHistory
 import json
 from decimal import Decimal
 
 class CustomerAccountPage(ctk.CTkFrame):
-    def __init__(self, parent, app=None):
+    def __init__(self, parent, app=None, user=None):
         super().__init__(parent)
         self.app = app
+        self.user = user
         self.configure(width=600, height=700)
 
         self.edit_icon = resize_image((20, 20), "images/edit_entry.png")
@@ -20,7 +21,7 @@ class CustomerAccountPage(ctk.CTkFrame):
         self.create_account_body()
 
     def create_header(self):
-        NavigationHeader(self, app=self.app).pack(side="top", fill="x")
+        NavigationHeader(self, app=self.app, user=self.user).pack(side="top", fill="x")
 
     def create_account_body(self):
         body_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -649,8 +650,8 @@ class CustomerAccountPage(ctk.CTkFrame):
         card.pack_propagate(False)
 
         # Header frame
-        header_frame = ctk.CTkFrame(card, fg_color="transparent", height=40)
-        header_frame.pack(fill="x", padx=15, pady=(10,5))
+        header_frame = ctk.CTkFrame(card, fg_color="transparent", height=50)
+        header_frame.pack(fill="x", padx=15, pady=(10,0))
         header_frame.pack_propagate(False)
 
         # Order ID and Date
@@ -661,23 +662,41 @@ class CustomerAccountPage(ctk.CTkFrame):
             font=("Poppins", 14, "bold"),
             text_color="black"
         ).pack(side="left")
+        
+        # Reorder button
+        reorder_btn = ctk.CTkButton(
+            header_frame,
+            text="Reorder",
+            font=("Poppins", 12),
+            fg_color="#F1D94B",
+            text_color="black",
+            width=100,
+            height=30,
+            command=lambda: self.reorder(order)
+        )
+        reorder_btn.pack(side="right")
+        
+        header_frame2 = ctk.CTkFrame(card, fg_color="transparent", height=10)
+        header_frame2.pack(fill="x",padx=15)
+        header_frame2.pack_propagate(False)
 
         date_str = f"Ordered on {order['CreatedAT'].strftime('%a, %b %d, %Y, %I:%M %p')}"
         ctk.CTkLabel(
-            header_frame,
+            header_frame2,
             text=date_str,
             font=("Poppins", 12),
             text_color="gray"
-        ).pack(side="right")
+        ).pack(side="left", pady=(0,1))
 
         # Separator line
-        separator = ctk.CTkFrame(card, height=1, fg_color="#E5E5E5")
-        separator.pack(fill="x", padx=15, pady=5)
+        separator = ctk.CTkFrame(card, height=2, fg_color="#E5E5E5")
+        separator.pack(fill="x", padx= 15,pady=5)
 
         # Items list
         items = json.loads(order['Item_list'])
         items_frame = ctk.CTkFrame(card, fg_color="transparent")
-        items_frame.pack(fill="x", padx=15)
+        items_frame.pack(fill="x",expand=True, padx=15, pady=(0,5))
+        items_frame.pack_propagate(False)
 
         for item in items:
             item_text = f"{item['name']} x {item['quantity']}"
@@ -688,31 +707,20 @@ class CustomerAccountPage(ctk.CTkFrame):
                 text_color="black",
                 anchor="w",
                 justify="left"
-            ).pack(fill="x")
+            ).pack(side="left", pady=(2,0))
 
-        # Total amount
-        total_frame = ctk.CTkFrame(card, fg_color="transparent")
-        total_frame.pack(fill="x", padx=15, pady=5)
+        # # Total amount
+        # total_frame = ctk.CTkFrame(card, fg_color="transparent")
+        # total_frame.pack(fill="x", padx=15, pady=5)
 
         ctk.CTkLabel(
-            total_frame,
+            items_frame,
             text=f"Total Paid: $ {float(order['Total_price']):.2f}",
             font=("Poppins", 12, "bold"),
             text_color="black"
         ).pack(side="right")
 
-        # Reorder button
-        reorder_btn = ctk.CTkButton(
-            card,
-            text="Reorder",
-            font=("Poppins", 12),
-            fg_color="#F1D94B",
-            text_color="black",
-            width=100,
-            height=30,
-            command=lambda: self.reorder(order)
-        )
-        reorder_btn.place(relx=0.92, rely=0.85, anchor="e")
+        
 
     def reorder(self, order):
         try:

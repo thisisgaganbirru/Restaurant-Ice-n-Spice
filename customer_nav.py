@@ -3,9 +3,10 @@ from utils import resize_image
 
 
 class NavigationHeader(ctk.CTkFrame):
-    def __init__(self, parent, app):
+    def __init__(self, parent, app, user):
         super().__init__(parent)
         self.app = app
+        self.user = user  
         self.configure(height=80, fg_color="white")
         self.pack_propagate(False)
 
@@ -14,7 +15,7 @@ class NavigationHeader(ctk.CTkFrame):
             logo_img = resize_image((70, 70), 'images/restaurantlogo.png')
             logo_label = ctk.CTkLabel(self, image=logo_img, text="", cursor="hand2")
             logo_label.image = logo_img  # Prevent image being garbage collected
-            logo_label.bind("<Button-1>", lambda e: self.app.show_menu_page() if self.app else None)
+            logo_label.bind("<Button-1>", lambda e: self.app.show_customer_dashboard(self.user) if self.app else None)
             logo_label.pack(side="left", padx=(10, 40))
         except Exception:
             ctk.CTkLabel(self, text="Ice & Spice", font=("Poppins", 20, "bold"),
@@ -27,7 +28,7 @@ class NavigationHeader(ctk.CTkFrame):
         # Home
         self.home_label = ctk.CTkLabel(nav_frame, text="Home", cursor="hand2", font=("Poppins", 14),
                                        text_color="black")
-        self.home_label.bind("<Button-1>", lambda e: self.app.show_menu_page() if self.app else None)
+        self.home_label.bind("<Button-1>", lambda e: self.app.show_customer_dashboard(self.user) if self.app else None)
         self.home_label.pack(side="left", padx=20)
 
         # About Us

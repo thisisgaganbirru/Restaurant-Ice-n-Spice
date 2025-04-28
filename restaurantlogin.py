@@ -108,9 +108,11 @@ class LoginPage(ctk.CTkFrame):
             
             if user:
                 # Navigate based on role
-                if user['role'] == 'admin':
+                if user.get('role') == 'admin':
+                    # Use the existing app methods to navigate
                     self.app.show_admin_dashboard(user)
                 else:
+                    # Use the existing app methods to navigate
                     self.app.show_customer_dashboard(user)
             else:
                 self.show_error("Invalid username or password")

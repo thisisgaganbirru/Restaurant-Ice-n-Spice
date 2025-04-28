@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from utils import resize_image
-from headerNav import NavigationHeader
+from customer_nav import NavigationHeader
 import mysql.connector
 from dbconnection import DB_CONFIG
 import json
