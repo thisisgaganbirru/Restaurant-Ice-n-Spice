@@ -417,17 +417,9 @@ class OrderPage(ctk.CTkFrame):
                 conn.close()
 
     def show_success_popup(self):
-        # Create blur effect
-        blur_frame = ctk.CTkFrame(
-            self.main_frame,
-            fg_color="#FFFFFF",  # Use a valid color without alpha transparency
-            corner_radius=0
-        )
-        blur_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-
         # Success popup
         popup_frame = ctk.CTkFrame(
-            blur_frame,
+            self.content_area,
             fg_color="#FFFFFF",
             corner_radius=0,
             border_width=2,
@@ -467,15 +459,14 @@ class OrderPage(ctk.CTkFrame):
         
         ctk.CTkLabel(
             popup_frame,
-            text="Returning to menu...",
+            text="Returning to customer dashboard...",
             font=("Poppins", 14),
             text_color="gray"
         ).pack(pady=5)
         
         app_ref = self.app
 
-        # Schedule return to menu
+        # Schedule return to customer dashboard
         self.after(5000, lambda: [
-            blur_frame.destroy(),
-            app_ref.show_customer_dashboard() if hasattr(self.app, 'show_menu_page') else print("Menu page navigation not implemented")
+            app_ref.show_customer_dashboard(self.user) if hasattr(app_ref, 'show_customer_dashboard') else print("Customer dashboard navigation not implemented")
         ])
