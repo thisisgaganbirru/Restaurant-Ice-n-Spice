@@ -4,35 +4,52 @@ import mysql.connector
 from datetime import datetime
 from tkinter import messagebox
 import re
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
+from tkinter import filedialog
+from adminreport_download import BusinessReportExporter
+import openpyxl
 
 class AdminCustomersPage(ctk.CTkFrame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.configure(fg_color="white")
+        self.configure(fg_color="#F1E8DD")
+        
+        # Main body frame
+        self.main_frame = ctk.CTkFrame(self, fg_color="#F1E8DD")
+        self.main_frame.pack(fill="both", expand=True)
+        self.main_frame.pack_propagate(False)    
         
         # Create customers content
-        self._create_customers_ui()
+        self.create_header()
+        self.create_customers_content()
+        self.create_footer()  # Add footer creation
+
+    
+
+    def create_header(self):
         
-    def _create_customers_ui(self):
-        # Main body frame
-        self.body_frame = ctk.CTkFrame(self, fg_color="#F1E8DD")  # Use self instead of self.content_frame
-        self.body_frame.pack(side="right", fill="both", expand=True)
-        
-        # Header with title and search
-        header_frame = ctk.CTkFrame(self.body_frame, fg_color="transparent", height=50)
-        header_frame.pack(fill="x", padx=20, pady=10)
+        # Header frame
+        header_frame = ctk.CTkFrame(self.main_frame, fg_color="#F1D94B", height=50)
+        header_frame.pack(fill="x", padx=5, pady=10)
+        header_frame.pack_propagate(False)
         
         # Title
         ctk.CTkLabel(
             header_frame,
-            text="Customers",
+            text="Admin Customers Dashboard",
             font=("Poppins", 24, "bold"),
-            text_color="#2B2B2B"
-        ).pack(side="left")
+            text_color="Black"
+        ).pack(side="left", padx=10)
+        
+        sub_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent",height=50)
+        sub_frame.pack(fill="x", padx=10, pady=10)
+        sub_frame.pack_propagate(False)
         
         # Search frame
-        search_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        search_frame = ctk.CTkFrame(sub_frame, fg_color="transparent")
         search_frame.pack(side="right")
         
         self.search_var = ctk.StringVar()
@@ -52,14 +69,47 @@ class AdminCustomersPage(ctk.CTkFrame):
             text_color="black",
             hover_color="#E5CE45",
             command=self.search_customers
-        ).pack(side="left", padx=5)
+        ).pack(side="left", padx=5)      
+        
+    def create_customers_content(self): 
         
         # Customers grid container
-        self.customers_frame = ctk.CTkFrame(self.body_frame, fg_color="transparent")
-        self.customers_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        self.customers_frame = ctk.CTkFrame(
+            self.main_frame, 
+            fg_color="transparent"
+        )
+        self.customers_frame.pack(
+            fill="both", 
+            expand=True, 
+            padx=20, 
+            pady=(10, 0)  # Reduced bottom padding to accommodate footer
+        )
         
         # Load customers
         self.load_customers()
+        
+    def create_footer(self):
+        """Create footer frame with export button"""
+        self.footer_frame = ctk.CTkFrame(
+            self.main_frame, 
+            fg_color="#F1E8DD",
+            height=50
+        )
+        self.footer_frame.pack(fill="x", side="bottom", padx=10, pady=10)
+        self.footer_frame.pack_propagate(False)
+
+        # Export button
+        ctk.CTkButton(
+            self.footer_frame,
+            text="Export Customer Data",
+            font=("Poppins", 12),
+            fg_color="#F1D94B",
+            text_color="black",
+            hover_color="#E5CE45",
+            width=150,
+            height=35,
+            command=self.export_customer_data
+        ).pack(side="right", padx=10)
         
     def load_customers(self, search_term=None):
         # Clear existing customers
@@ -324,3 +374,53 @@ class AdminCustomersPage(ctk.CTkFrame):
     def search_customers(self):
         search_term = self.search_var.get().strip()
         self.load_customers(search_term if search_term else None)
+
+    def export_customer_data(self):
+        """Export customer data using BusinessReportExporter"""
+        try:
+            # Create default filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            default_filename = f"IcenSpice_Customers_{timestamp}.xlsx"
+            
+            # Ask for save location with default filename
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel files", "*.xlsx")],
+                initialfile=default_filename,
+                title="Ice'n Spice Customer Data Export"
+            )
+            
+            if not file_path:
+                return
+
+            # Create workbook
+            workbook = openpyxl.Workbook()
+            
+            # Connect to database
+            conn = mysql.connector.connect(**DB_CONFIG)
+            
+            # Create instance of BusinessReportExporter and use its method
+            exporter = BusinessReportExporter()
+            exporter._create_customer_sheet(conn, workbook, "All Time")
+            
+            # Save workbook
+            workbook.save(file_path)
+            
+            # Close database connection
+            conn.close()
+            
+            messagebox.showinfo(
+                "Export Successful", 
+                f"Customer data exported successfully to:\n{file_path}"
+            )
+
+        except mysql.connector.Error as err:
+            messagebox.showerror(
+                "Export Error", 
+                f"Failed to export customer data: {err}"
+            )
+        except Exception as e:
+            messagebox.showerror(
+                "Export Error", 
+                f"An error occurred while exporting: {e}"
+            )

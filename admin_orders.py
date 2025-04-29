@@ -33,7 +33,7 @@ class AdminOrdersPage(ctk.CTkFrame):
         
         # Orders Container
         self.orders_container = ctk.CTkFrame(self, fg_color="transparent")
-        self.orders_container.pack(fill="both", expand=True, padx=20, pady=10)
+        self.orders_container.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Initialize variables
         self.expanded_order_id = None
@@ -50,17 +50,18 @@ class AdminOrdersPage(ctk.CTkFrame):
         self.after(100, self.load_orders)
         
     def _create_orders_header(self):
-        header_frame = ctk.CTkFrame(self.orders_container, fg_color="transparent")
-        header_frame.pack(fill="x", pady=(0, 10))
+                
+        header_frame = ctk.CTkFrame(self.orders_container, fg_color="#F1D94B", height=50)
+        header_frame.pack(fill="x",  padx=5, pady=10)
+        header_frame.pack_propagate(False)
         
         # Orders title
         ctk.CTkLabel(
             header_frame,
-            text="Orders",
+            text="Admin Orders Dashboard",
             font=("Poppins", 24, "bold"),
-            text_color="#2B2B2B"
-        ).pack(side="left")
-        
+            text_color="black"
+        ).pack(side="left", padx=10)
         # Orders count
         self.orders_count = ctk.CTkLabel(
             header_frame,
@@ -72,7 +73,7 @@ class AdminOrdersPage(ctk.CTkFrame):
         
     def _create_filter_bar(self):
         filter_frame = ctk.CTkFrame(self.orders_container, fg_color="transparent")
-        filter_frame.pack(fill="x", pady=(0, 10))
+        filter_frame.pack(fill="x", pady=(10, 10))
         
         # Left side - Filters
         filter_left = ctk.CTkFrame(filter_frame, fg_color="transparent")
@@ -158,7 +159,8 @@ class AdminOrdersPage(ctk.CTkFrame):
         
     def _create_footer(self):
         self.footer = ctk.CTkFrame(self.orders_container, fg_color="transparent", height=50)
-        self.footer.pack(fill="x")
+        self.footer.pack(fill="x", pady=(10, 0))
+        self.footer.pack_propagate(False)
         
         # Refresh button
         refresh_btn = ctk.CTkButton(

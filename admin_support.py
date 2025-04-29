@@ -26,7 +26,7 @@ class AdminSupport(ctk.CTkFrame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.configure(fg_color="white")
+        self.configure(fg_color="#F1E8DD")
         
         # Load environment variables
         load_dotenv()
@@ -112,31 +112,23 @@ class AdminSupport(ctk.CTkFrame):
         self.body_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
         
         # Header with title and compose button
-        header_frame = ctk.CTkFrame(
-            self.body_frame, 
-            fg_color="transparent", 
-            height=60,
-            border_width=1,
-            border_color="#E0E0E0"
-        )
-        header_frame.pack(fill="x", padx=20)
+        header_frame = ctk.CTkFrame(self.body_frame, fg_color="#F1D94B", height=50)
+        header_frame.pack(fill="x",  padx=5, pady=10)
         header_frame.pack_propagate(False)
         
         # Title with updated styling
         ctk.CTkLabel(
             header_frame,
-            text="Admin Support",
+            text="Admin Support Dashboard",
             font=("Poppins", 24, "bold"),
-            text_color="#2B2B2B"
-        ).pack(side="left")
+            text_color="black",
+        ).pack(side="left", padx=10)
         
         # Header with title and compose button
         sub_frame = ctk.CTkFrame(
             self.body_frame, 
             fg_color="transparent", 
-            height=60,
-            border_width=1,
-            border_color="#E0E0E0")
+            height=60)
         sub_frame.pack(fill="x", padx=20, pady=10)
         sub_frame.pack_propagate(False)
 

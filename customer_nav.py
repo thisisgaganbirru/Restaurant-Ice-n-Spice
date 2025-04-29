@@ -56,6 +56,38 @@ class NavigationHeader(ctk.CTkFrame):
         self.logout_label.pack(side="left", padx=20)
 
     def logout(self):
-        # Clear user session or perform any logout logic
-        print("User logged out")  # Debugging message
-        self.app.show_login()  # Switch to the login page
+        # Create a popup frame
+        popup = ctk.CTkToplevel(self)
+        popup.title("Logout Successful")
+        popup.geometry("500x500")
+        popup.resizable(False, False)
+
+        # Center the popup on the screen
+        popup.update_idletasks()
+        x = (popup.winfo_screenwidth() - 500) // 2
+        y = (popup.winfo_screenheight() - 500) // 2
+        popup.geometry(f"500x500+{x}+{y}")
+
+        # Configure the popup appearance
+        popup.configure(fg_color="white")
+
+        # Add a success message
+        ctk.CTkLabel(
+            popup,
+            text="Logout Successful!",
+            font=("Poppins", 24, "bold"),
+            text_color="green"
+        ).pack(pady=(100, 20))
+
+        ctk.CTkLabel(
+            popup,
+            text="Returning to login page...",
+            font=("Poppins", 16),
+            text_color="black"
+        ).pack(pady=(0, 20))
+
+        # Schedule the popup to close and navigate to the login page
+        popup.after(3000, lambda: [popup.destroy(), self.app.show_login()])
+
+        # Debugging message
+        print("User logged out")
