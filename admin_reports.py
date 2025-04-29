@@ -255,7 +255,7 @@ class AdminReportsPage(ctk.CTkFrame):
 
     def _create_graphs(self):
         self.topgraph_frame = ctk.CTkFrame(self.right_panel, fg_color="transparent", height=250)
-        self.topgraph_frame.pack(fill="x", padx=5, pady=(5, 5))  # Reduced padding
+        self.topgraph_frame.pack(fill="x")  # Reduced padding
         self.topgraph_frame.pack_propagate(False)  # Prevent top graph frame from expanding
 
         # Sales by category graph container
@@ -265,10 +265,10 @@ class AdminReportsPage(ctk.CTkFrame):
             font=("Inter", 16, "bold"),
             text_color="black",
             anchor="w"
-        ).pack(fill="x", padx=5, pady=(10, 5))  # Reduced padding
+        ).pack(fill="x", padx=2, pady=2)  # Reduced padding
 
         self.sales_graphcontainer = ctk.CTkFrame(self.topgraph_frame, fg_color="transparent")
-        self.sales_graphcontainer.pack(fill="both", expand=True, padx=5, pady=(0, 10))  # Reduced padding
+        self.sales_graphcontainer.pack(fill="both", expand=True)  # Reduced padding
         self.sales_graphcontainer.pack_propagate(False)  # Prevent sales graph container from expanding
         
         # Call the graph method
@@ -283,7 +283,7 @@ class AdminReportsPage(ctk.CTkFrame):
         
         # Bottom graph frame for customer heatmap
         self.bottomgraph_frame = ctk.CTkFrame(self.right_panel, fg_color="transparent", height=250)
-        self.bottomgraph_frame.pack(fill="x", padx=5, pady=(5, 5))  # Reduced padding
+        self.bottomgraph_frame.pack(fill="x")  # Reduced padding
         self.bottomgraph_frame.pack_propagate(False)  # Prevent bottom graph frame from expanding
 
         # Customer traffic heatmap container
@@ -293,10 +293,10 @@ class AdminReportsPage(ctk.CTkFrame):
             font=("Inter", 16, "bold"),
             text_color="black",
             anchor="w"
-        ).pack(fill="x", padx=5, pady=(10, 5))  # Reduced padding
+        ).pack(fill="x", padx=2, pady=2)  # Reduced padding
 
         self.traffic_graphcontainer = ctk.CTkFrame(self.bottomgraph_frame, fg_color="transparent")
-        self.traffic_graphcontainer.pack(fill="both", expand=True, padx=5, pady=(0, 10))  # Reduced padding
+        self.traffic_graphcontainer.pack(fill="both", expand=True)  # Reduced padding
         self.traffic_graphcontainer.pack_propagate(False)  # Prevent traffic graph container from expanding
         
         # Call the graph method

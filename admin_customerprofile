@@ -1,0 +1,984 @@
+import customtkinter as ctk
+from datetime import datetime
+import mysql.connector
+from tkinter import messagebox
+from dbconnection import DB_CONFIG
+
+class CustomerProfileView(ctk.CTkFrame):
+    
+    def __init__(self, parent, customer_id=None, on_back=None):
+        """
+        Initialize the profile view.
+        
+        Args:
+            parent: Parent widget
+            customer_id: ID of customer to display
+            on_back: Callback function when back button is clicked
+        """
+        super().__init__(parent)
+        self.parent = parent
+        self.customer_id = customer_id
+        self.on_back = on_back
+        self.customer_data = None
+        self.active_tab = ctk.StringVar(value="overview")
+        
+        # Configure frame
+        self.configure(fg_color="#f5f5f5")
+        
+        # Create main layout
+        self.create_layout()
+        
+        # Load customer data if ID is provided
+        if customer_id:
+            self.load_customer_data()
+    
+    def create_layout(self):
+        """Create the main layout structure"""
+        # Header
+        self.header_frame = ctk.CTkFrame(self, fg_color="white", height=70)
+        self.header_frame.pack(fill="x")
+        self.header_frame.pack_propagate(False)
+        
+        # Back button
+        self.back_btn = ctk.CTkButton(
+            self.header_frame,
+            text="← Back",
+            font=("Arial", 12),
+            fg_color="transparent",
+            text_color="#4b5563",
+            hover_color="#f3f4f6",
+            width=80,
+            command=self.handle_back
+        )
+        self.back_btn.pack(side="left", padx=20, pady=15)
+        
+        # Title
+        self.title_label = ctk.CTkLabel(
+            self.header_frame,
+            text="Customer Profile",
+            font=("Arial", 20, "bold"),
+            text_color="#1f2937"
+        )
+        self.title_label.pack(side="left", padx=5, pady=15)
+        
+        # Content scroll area
+        self.content_scroll = ctk.CTkScrollableFrame(
+            self,
+            fg_color="transparent",
+            scrollbar_button_color="#eab308",
+            scrollbar_button_hover_color="#d97706"
+        )
+        self.content_scroll.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Content will be populated after customer data is loaded
+    
+    def handle_back(self):
+        """Handle back button click"""
+        if self.on_back:
+            self.on_back()
+        # If no callback, just hide this frame
+        else:
+            self.pack_forget()
+    
+    def load_customer_data(self):
+        """Load customer data from database"""
+        try:
+            conn = mysql.connector.connect(**DB_CONFIG)
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get customer profile info
+            query = """
+                SELECT * FROM users 
+                WHERE userID = %s
+            """
+            cursor.execute(query, (self.customer_id,))
+            self.customer_data = cursor.fetchone()
+            
+            if not self.customer_data:
+                print(f"Customer with ID {self.customer_id} not found")
+                conn.close()
+                return
+            
+            # Get customer orders
+            query = """
+                SELECT o.*, SUM(o.Total_price) as total_spent,
+                COUNT(o.OrderID) as order_count,
+                MAX(o.CreatedAT) as last_order_date
+                FROM `Order` o
+                WHERE o.UserID = %s
+                GROUP BY o.UserID
+            """
+            cursor.execute(query, (self.customer_id,))
+            self.order_stats = cursor.fetchone() or {
+                'order_count': 0, 
+                'total_spent': 0, 
+                'last_order_date': None
+            }
+            
+            # Get recent orders
+            query = """
+                SELECT o.OrderID, o.CreatedAT, o.Total_price, o.Status, o.orderStatus
+                FROM `Order` o
+                WHERE o.UserID = %s
+                ORDER BY o.CreatedAT DESC
+                LIMIT 5
+            """
+            cursor.execute(query, (self.customer_id,))
+            self.recent_orders = cursor.fetchall() or []
+            
+            # Get favorite items (most ordered)
+            query = """
+                SELECT m.Name, COUNT(*) as order_count
+                FROM `Order` o
+                JOIN Menu m ON FIND_IN_SET(m.MenuID, REPLACE(o.Item_list, ';', ',')) > 0
+                WHERE o.UserID = %s
+                GROUP BY m.MenuID
+                ORDER BY order_count DESC
+                LIMIT 3
+            """
+            try:
+                cursor.execute(query, (self.customer_id,))
+                self.favorite_items = cursor.fetchall() or []
+            except:
+                # In case the query doesn't work due to data format
+                self.favorite_items = []
+            
+            conn.close()
+            
+            # Populate UI with data
+            self.populate_ui()
+            
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
+    
+    def populate_ui(self):
+        """Populate UI with customer data"""
+        if not self.customer_data:
+            return
+        
+        # Update title with customer name
+        full_name = f"{self.customer_data['first_name']} {self.customer_data['last_name']}"
+        self.title_label.configure(text=f"Customer Profile - {full_name}")
+        
+        # Customer info card
+        self.create_info_card()
+        
+        # Tabs
+        self.create_tabs()
+        
+        # Tab content container
+        self.tab_content_frame = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
+        self.tab_content_frame.pack(fill="both", expand=True, pady=10)
+        
+        # Show initial tab content
+        self.show_overview_tab()
+    
+    def create_info_card(self):
+        """Create customer info card with details"""
+        info_card = ctk.CTkFrame(self.content_scroll, fg_color="white", corner_radius=8)
+        info_card.pack(fill="x", pady=10)
+        
+        # Top info with avatar
+        top_info = ctk.CTkFrame(info_card, fg_color="transparent")
+        top_info.pack(fill="x", padx=20, pady=15)
+        
+        # Avatar circle with first letter
+        avatar_frame = ctk.CTkFrame(
+            top_info, 
+            width=60, 
+            height=60, 
+            corner_radius=30, 
+            fg_color="#fef3c7"
+        )
+        avatar_frame.pack(side="left", padx=(0, 15))
+        avatar_frame.pack_propagate(False)
+        
+        # Avatar letter
+        avatar_letter = self.customer_data['first_name'][0] if self.customer_data['first_name'] else "?"
+        ctk.CTkLabel(
+            avatar_frame,
+            text=avatar_letter,
+            font=("Arial", 24, "bold"),
+            text_color="#d97706"
+        ).place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Customer info
+        cust_info = ctk.CTkFrame(top_info, fg_color="transparent")
+        cust_info.pack(side="left", fill="x", expand=True)
+        
+        # Full name
+        name = f"{self.customer_data['first_name']} {self.customer_data['last_name']}"
+        ctk.CTkLabel(
+            cust_info,
+            text=name,
+            font=("Arial", 24, "bold"),
+            text_color="#1f2937",
+            anchor="w"
+        ).pack(anchor="w")
+        
+        # Username
+        ctk.CTkLabel(
+            cust_info,
+            text=f"@{self.customer_data['username']}",
+            font=("Arial", 14),
+            text_color="#6b7280",
+            anchor="w"
+        ).pack(anchor="w")
+        
+        # Edit profile button
+        edit_btn = ctk.CTkButton(
+            top_info,
+            text="Edit Profile",
+            font=("Arial", 13),
+            fg_color="#eab308",
+            text_color="white",
+            hover_color="#d97706",
+            height=40,
+            corner_radius=8,
+            command=self.handle_edit
+        )
+        edit_btn.pack(side="right")
+        
+        # Contact information
+        contact_frame = ctk.CTkFrame(info_card, fg_color="transparent")
+        contact_frame.pack(fill="x", padx=20, pady=10)
+        
+        # Two columns for contact info
+        left_col = ctk.CTkFrame(contact_frame, fg_color="transparent")
+        left_col.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        
+        right_col = ctk.CTkFrame(contact_frame, fg_color="transparent")
+        right_col.pack(side="left", fill="x", expand=True, padx=(10, 0))
+        
+        # Email
+        email_frame = ctk.CTkFrame(left_col, fg_color="transparent", height=30)
+        email_frame.pack(fill="x", pady=5)
+        
+        email_icon = ctk.CTkLabel(email_frame, text="✉", font=("Arial", 16), text_color="#9ca3af")
+        email_icon.pack(side="left", padx=(0, 10))
+        
+        ctk.CTkLabel(
+            email_frame,
+            text=self.customer_data['email'] if self.customer_data['email'] else "No email provided",
+            font=("Arial", 13),
+            text_color="#4b5563"
+        ).pack(side="left")
+        
+        # Phone
+        phone_frame = ctk.CTkFrame(right_col, fg_color="transparent", height=30)
+        phone_frame.pack(fill="x", pady=5)
+        
+        phone_icon = ctk.CTkLabel(phone_frame, text="☎", font=("Arial", 16), text_color="#9ca3af")
+        phone_icon.pack(side="left", padx=(0, 10))
+        
+        ctk.CTkLabel(
+            phone_frame,
+            text=self.customer_data['phone_number'] if self.customer_data['phone_number'] else "No phone provided",
+            font=("Arial", 13),
+            text_color="#4b5563"
+        ).pack(side="left")
+        
+        # Address
+        address_frame = ctk.CTkFrame(left_col, fg_color="transparent", height=30)
+        address_frame.pack(fill="x", pady=5)
+        
+        address_icon = ctk.CTkLabel(address_frame, text="⌂", font=("Arial", 16), text_color="#9ca3af")
+        address_icon.pack(side="left", padx=(0, 10))
+        
+        ctk.CTkLabel(
+            address_frame,
+            text=self.customer_data['address'] if self.customer_data['address'] else "No address provided",
+            font=("Arial", 13),
+            text_color="#4b5563"
+        ).pack(side="left")
+        
+        # Member since
+        member_frame = ctk.CTkFrame(right_col, fg_color="transparent", height=30)
+        member_frame.pack(fill="x", pady=5)
+        
+        member_icon = ctk.CTkLabel(member_frame, text="📅", font=("Arial", 16), text_color="#9ca3af")
+        member_icon.pack(side="left", padx=(0, 10))
+        
+        created_date = datetime.strptime(str(self.customer_data['created_at']), '%Y-%m-%d %H:%M:%S')
+        
+        ctk.CTkLabel(
+            member_frame,
+            text=f"Member since: {created_date.strftime('%b %Y')}",
+            font=("Arial", 13),
+            text_color="#4b5563"
+        ).pack(side="left")
+    
+    def create_tabs(self):
+        """Create tab navigation"""
+        tabs_frame = ctk.CTkFrame(self.content_scroll, fg_color="white", height=50)
+        tabs_frame.pack(fill="x", pady=(15, 0))
+        
+        # Tab creation helper function
+        def create_tab(name, label_text):
+            tab = ctk.CTkFrame(tabs_frame, fg_color="transparent", width=100, height=50)
+            tab.pack(side="left")
+            tab.pack_propagate(False)
+            
+            is_active = name == self.active_tab.get()
+            label = ctk.CTkLabel(
+                tab, 
+                text=label_text,
+                font=("Arial", 14, "bold" if is_active else "normal"),
+                text_color="#eab308" if is_active else "#6b7280",
+                cursor="hand2"
+            )
+            label.pack(side="bottom", pady=10)
+            
+            # Bind click event
+            label.bind("<Button-1>", lambda e, tab_name=name: self.switch_tab(tab_name))
+            
+            # Add indicator for active tab
+            if is_active:
+                indicator = ctk.CTkFrame(tab, fg_color="#eab308", height=3, width=80)
+                indicator.place(relx=0.5, rely=1, anchor="s")
+        
+        # Create the three tabs
+        create_tab("overview", "Overview")
+        create_tab("orders", "Orders")
+        create_tab("preferences", "Preferences")
+    
+    def switch_tab(self, tab_name):
+        """Switch the active tab"""
+        if tab_name == self.active_tab.get():
+            return
+            
+        self.active_tab.set(tab_name)
+        
+        # Clear existing tab content
+        for widget in self.tab_content_frame.winfo_children():
+            widget.destroy()
+        
+        # Recreate tabs to update the active state
+        for widget in self.content_scroll.winfo_children():
+            if isinstance(widget, ctk.CTkFrame) and widget != self.tab_content_frame:
+                widget.destroy()
+        
+        self.create_info_card()
+        self.create_tabs()
+        
+        # Show tab content based on selected tab
+        if tab_name == "overview":
+            self.show_overview_tab()
+        elif tab_name == "orders":
+            self.show_orders_tab()
+        elif tab_name == "preferences":
+            self.show_preferences_tab()
+    
+    def show_overview_tab(self):
+        """Show overview tab content"""
+        # Stats cards
+        stats_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="transparent")
+        stats_frame.pack(fill="x", pady=10)
+        
+        # Function to create stat card
+        def create_stat_card(parent, title, value, icon):
+            card = ctk.CTkFrame(parent, fg_color="white", corner_radius=8, width=300, height=100)
+            card.pack(side="left", padx=5, fill="x", expand=True)
+            card.pack_propagate(False)
+            
+            header = ctk.CTkFrame(card, fg_color="transparent")
+            header.pack(fill="x", padx=15, pady=(15, 5))
+            
+            ctk.CTkLabel(
+                header,
+                text=title,
+                font=("Arial", 12, "bold"),
+                text_color="#6b7280",
+                anchor="w"
+            ).pack(side="left")
+            
+            ctk.CTkLabel(
+                header,
+                text=icon,
+                font=("Arial", 16),
+                text_color="#eab308"
+            ).pack(side="right")
+            
+            ctk.CTkLabel(
+                card,
+                text=value,
+                font=("Arial", 24, "bold"),
+                text_color="#1f2937"
+            ).pack(anchor="w", padx=15)
+        
+        # Order count
+        order_count = self.order_stats.get('order_count', 0) if self.order_stats else 0
+        create_stat_card(stats_frame, "Total Orders", str(order_count), "🛒")
+        
+        # Total spent
+        total_spent = self.order_stats.get('total_spent', 0) if self.order_stats else 0
+        formatted_total = f"${total_spent:.2f}" if total_spent else "$0.00"
+        create_stat_card(stats_frame, "Total Spent", formatted_total, "💰")
+        
+        # Last order date
+        last_order = self.order_stats.get('last_order_date') if self.order_stats else None
+        last_order_str = last_order.strftime('%d %b %Y') if last_order else "No orders"
+        create_stat_card(stats_frame, "Last Order", last_order_str, "📅")
+        
+        # Recent orders
+        if self.recent_orders:
+            orders_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="white", corner_radius=8)
+            orders_frame.pack(fill="x", pady=10)
+            
+            # Orders header
+            header_frame = ctk.CTkFrame(orders_frame, fg_color="transparent")
+            header_frame.pack(fill="x", padx=15, pady=15)
+            
+            ctk.CTkLabel(
+                header_frame,
+                text="Recent Orders",
+                font=("Arial", 16, "bold"),
+                text_color="#1f2937"
+            ).pack(side="left")
+            
+            ctk.CTkButton(
+                header_frame,
+                text="View all",
+                font=("Arial", 12),
+                fg_color="transparent",
+                text_color="#eab308",
+                hover_color="transparent",
+                command=lambda: self.switch_tab("orders")
+            ).pack(side="right")
+            
+            # Orders table
+            table_frame = ctk.CTkFrame(orders_frame, fg_color="transparent")
+            table_frame.pack(fill="x", padx=15, pady=(0, 15))
+            
+            # Table headers
+            headers = ["ID", "Date", "Amount", "Status"]
+            for i, header in enumerate(headers):
+                ctk.CTkLabel(
+                    table_frame,
+                    text=header,
+                    font=("Arial", 12, "bold"),
+                    text_color="#6b7280"
+                ).grid(row=0, column=i, sticky="w", padx=5, pady=(0, 10))
+            
+            # Table rows
+            for i, order in enumerate(self.recent_orders):
+                ctk.CTkLabel(
+                    table_frame, 
+                    text=f"ORD-{order['OrderID']}",
+                    font=("Arial", 12),
+                    text_color="#1f2937"
+                ).grid(row=i+1, column=0, sticky="w", padx=5, pady=8)
+                
+                order_date = order['CreatedAT'].strftime('%d %b %Y') if order['CreatedAT'] else "N/A"
+                ctk.CTkLabel(
+                    table_frame, 
+                    text=order_date,
+                    font=("Arial", 12),
+                    text_color="#6b7280"
+                ).grid(row=i+1, column=1, sticky="w", padx=5, pady=8)
+                
+                formatted_price = f"${order['Total_price']:.2f}" if order['Total_price'] else "$0.00"
+                ctk.CTkLabel(
+                    table_frame, 
+                    text=formatted_price,
+                    font=("Arial", 12),
+                    text_color="#6b7280"
+                ).grid(row=i+1, column=2, sticky="w", padx=5, pady=8)
+                
+                # Status pill
+                status = order.get('orderStatus', order.get('Status', 'Unknown'))
+                bg_color = "#dcfce7" if status.lower() == 'delivered' else "#fef3c7"
+                text_color = "#166534" if status.lower() == 'delivered' else "#92400e"
+                
+                status_frame = ctk.CTkFrame(table_frame, fg_color=bg_color, corner_radius=10)
+                status_frame.grid(row=i+1, column=3, sticky="w", padx=5, pady=8)
+                
+                ctk.CTkLabel(
+                    status_frame,
+                    text=status.capitalize(),
+                    font=("Arial", 11),
+                    text_color=text_color,
+                    padx=10,
+                    pady=2
+                ).pack()
+        
+        # Favorite items
+        if self.favorite_items:
+            favorites_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="white", corner_radius=8)
+            favorites_frame.pack(fill="x", pady=10)
+            
+            ctk.CTkLabel(
+                favorites_frame,
+                text="Favorite Items",
+                font=("Arial", 16, "bold"),
+                text_color="#1f2937",
+                anchor="w"
+            ).pack(anchor="w", padx=15, pady=15)
+            
+            # Items container
+            items_frame = ctk.CTkFrame(favorites_frame, fg_color="transparent")
+            items_frame.pack(fill="x", padx=15, pady=(0, 15))
+            
+            for item in self.favorite_items:
+                item_frame = ctk.CTkFrame(items_frame, fg_color="#f9fafb", corner_radius=8)
+                item_frame.pack(fill="x", pady=3)
+                
+                icon_frame = ctk.CTkFrame(item_frame, fg_color="#fef3c7", width=30, height=30, corner_radius=15)
+                icon_frame.pack(side="left", padx=10, pady=10)
+                icon_frame.pack_propagate(False)
+                
+                ctk.CTkLabel(
+                    icon_frame,
+                    text="🛒",
+                    font=("Arial", 12),
+                    text_color="#eab308"
+                ).place(relx=0.5, rely=0.5, anchor="center")
+                
+                ctk.CTkLabel(
+                    item_frame,
+                    text=item['Name'],
+                    font=("Arial", 12),
+                    text_color="#4b5563"
+                ).pack(side="left", padx=10, pady=10)
+        
+        # If no orders or favorites, show a message
+        if not self.recent_orders and not self.favorite_items:
+            message_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="white", corner_radius=8)
+            message_frame.pack(fill="x", pady=10)
+            
+            ctk.CTkLabel(
+                message_frame,
+                text="No order history found for this customer.",
+                font=("Arial", 14),
+                text_color="#6b7280",
+                pady=30
+            ).pack()
+    
+    def show_orders_tab(self):
+        """Show orders tab content"""
+        # Placeholder for full order history
+        orders_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="white", corner_radius=8)
+        orders_frame.pack(fill="x", pady=10)
+        
+        ctk.CTkLabel(
+            orders_frame,
+            text="Order History",
+            font=("Arial", 16, "bold"),
+            text_color="#1f2937",
+            anchor="w"
+        ).pack(anchor="w", padx=15, pady=15)
+        
+        if not self.recent_orders:
+            ctk.CTkLabel(
+                orders_frame,
+                text="No order history found for this customer.",
+                font=("Arial", 13),
+                text_color="#6b7280"
+            ).pack(padx=15, pady=20)
+            return
+            
+        # Create order table
+        table_frame = ctk.CTkFrame(orders_frame, fg_color="transparent")
+        table_frame.pack(fill="x", padx=15, pady=(0, 15))
+        
+        # Table headers
+        headers = ["Order ID", "Date", "Amount", "Status", "Actions"]
+        for i, header in enumerate(headers):
+            ctk.CTkLabel(
+                table_frame,
+                text=header,
+                font=("Arial", 12, "bold"),
+                text_color="#6b7280"
+            ).grid(row=0, column=i, sticky="w", padx=5, pady=(0, 10))
+        
+        # Table rows
+        for i, order in enumerate(self.recent_orders):
+            ctk.CTkLabel(
+                table_frame, 
+                text=f"ORD-{order['OrderID']}",
+                font=("Arial", 12),
+                text_color="#1f2937"
+            ).grid(row=i+1, column=0, sticky="w", padx=5, pady=8)
+            
+            order_date = order['CreatedAT'].strftime('%d %b %Y') if order['CreatedAT'] else "N/A"
+            ctk.CTkLabel(
+                table_frame, 
+                text=order_date,
+                font=("Arial", 12),
+                text_color="#6b7280"
+            ).grid(row=i+1, column=1, sticky="w", padx=5, pady=8)
+            
+            formatted_price = f"${order['Total_price']:.2f}" if order['Total_price'] else "$0.00"
+            ctk.CTkLabel(
+                table_frame, 
+                text=formatted_price,
+                font=("Arial", 12),
+                text_color="#6b7280"
+            ).grid(row=i+1, column=2, sticky="w", padx=5, pady=8)
+            
+            # Status pill
+            status = order.get('orderStatus', order.get('Status', 'Unknown'))
+            bg_color = "#dcfce7" if status.lower() == 'delivered' else "#fef3c7"
+            text_color = "#166534" if status.lower() == 'delivered' else "#92400e"
+            
+            status_frame = ctk.CTkFrame(table_frame, fg_color=bg_color, corner_radius=10)
+            status_frame.grid(row=i+1, column=3, sticky="w", padx=5, pady=8)
+            
+            ctk.CTkLabel(
+                status_frame,
+                text=status.capitalize(),
+                font=("Arial", 11),
+                text_color=text_color,
+                padx=10,
+                pady=2
+            ).pack()
+            
+            # View details button
+            view_btn = ctk.CTkButton(
+                table_frame,
+                text="View",
+                font=("Arial", 11),
+                fg_color="#eab308",
+                text_color="white",
+                hover_color="#d97706",
+                width=60,
+                height=25,
+                corner_radius=5,
+                command=lambda order_id=order['OrderID']: self.view_order_details(order_id)
+            )
+            view_btn.grid(row=i+1, column=4, sticky="w", padx=5, pady=8)
+    
+    def show_preferences_tab(self):
+        """Show preferences tab content"""
+        prefs_frame = ctk.CTkFrame(self.tab_content_frame, fg_color="white", corner_radius=8)
+        prefs_frame.pack(fill="x", pady=10)
+        
+        ctk.CTkLabel(
+            prefs_frame,
+            text="Customer Preferences",
+            font=("Arial", 16, "bold"),
+            text_color="#1f2937",
+            anchor="w"
+        ).pack(anchor="w", padx=15, pady=15)
+        
+        # Placeholder for preferences
+        ctk.CTkLabel(
+            prefs_frame,
+            text="Customer preferences and settings would be displayed here.",
+            font=("Arial", 13),
+            text_color="#6b7280"
+        ).pack(padx=15, pady=20)
+    
+    def handle_edit(self):
+        """Handle edit profile button click"""
+        # This would be connected to an edit dialog
+        # For now, just print a message
+        print(f"Edit profile for customer ID: {self.customer_id}")
+    
+    def view_order_details(self, order_id):
+        """View details of specific order"""
+        try:
+            # Create a toplevel window for order details
+            details_window = ctk.CTkToplevel(self)
+            details_window.title(f"Order Details - ORD-{order_id}")
+            details_window.geometry("700x500")
+            details_window.grab_set()  # Make modal
+            
+            # Center the window
+            details_window.update_idletasks()
+            screen_width = details_window.winfo_screenwidth()
+            screen_height = details_window.winfo_screenheight()
+            x = (screen_width - 700) // 2
+            y = (screen_height - 500) // 2
+            details_window.geometry(f"700x500+{x}+{y}")
+            
+            # Main frame
+            main_frame = ctk.CTkFrame(details_window, fg_color="#f5f5f5")
+            main_frame.pack(fill="both", expand=True, padx=0, pady=0)
+            
+            # Header
+            header_frame = ctk.CTkFrame(main_frame, fg_color="white", height=60)
+            header_frame.pack(fill="x", padx=0, pady=0)
+            header_frame.pack_propagate(False)
+            
+            ctk.CTkLabel(
+                header_frame,
+                text=f"Order Details - ORD-{order_id}",
+                font=("Arial", 18, "bold"),
+                text_color="#1f2937"
+            ).pack(side="left", padx=20, pady=15)
+            
+            # Content frame
+            content_frame = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
+            content_frame.pack(fill="both", expand=True, padx=20, pady=15)
+            
+            # Load order details
+            conn = mysql.connector.connect(**DB_CONFIG)
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get order info
+            query = """
+                SELECT * FROM `Order` 
+                WHERE OrderID = %s
+            """
+            cursor.execute(query, (order_id,))
+            order = cursor.fetchone()
+            
+            if not order:
+                ctk.CTkLabel(
+                    content_frame,
+                    text="Order not found",
+                    font=("Arial", 14),
+                    text_color="#ef4444"
+                ).pack(pady=20)
+                conn.close()
+                return
+                
+            # Order info card
+            order_card = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=8)
+            order_card.pack(fill="x", pady=10)
+            
+            # Order summary
+            summary_frame = ctk.CTkFrame(order_card, fg_color="transparent")
+            summary_frame.pack(fill="x", padx=15, pady=15)
+            
+            # Left column - Order ID, Date, Customer
+            left_col = ctk.CTkFrame(summary_frame, fg_color="transparent")
+            left_col.pack(side="left", fill="x", expand=True)
+            
+            # Order ID
+            id_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+            id_frame.pack(anchor="w", pady=3)
+            
+            ctk.CTkLabel(
+                id_frame,
+                text="Order ID:",
+                font=("Arial", 12, "bold"),
+                text_color="#4b5563"
+            ).pack(side="left", padx=(0, 5))
+            
+            ctk.CTkLabel(
+                id_frame,
+                text=f"ORD-{order['OrderID']}",
+                font=("Arial", 12),
+                text_color="#1f2937"
+            ).pack(side="left")
+            
+            # Date
+            date_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+            date_frame.pack(anchor="w", pady=3)
+            
+            ctk.CTkLabel(
+                date_frame,
+                text="Date:",
+                font=("Arial", 12, "bold"),
+                text_color="#4b5563"
+            ).pack(side="left", padx=(0, 5))
+            
+            order_date = order['CreatedAT'].strftime('%d %b %Y, %H:%M') if order['CreatedAT'] else "N/A"
+            ctk.CTkLabel(
+                date_frame,
+                text=order_date,
+                font=("Arial", 12),
+                text_color="#1f2937"
+            ).pack(side="left")
+            
+            # Customer
+            cust_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+            cust_frame.pack(anchor="w", pady=3)
+            
+            ctk.CTkLabel(
+                cust_frame,
+                text="Customer:",
+                font=("Arial", 12, "bold"),
+                text_color="#4b5563"
+            ).pack(side="left", padx=(0, 5))
+            
+            ctk.CTkLabel(
+                cust_frame,
+                text=order.get('UserName', 'Unknown'),
+                font=("Arial", 12),
+                text_color="#1f2937"
+            ).pack(side="left")
+            
+            # Right column - Status, Total
+            right_col = ctk.CTkFrame(summary_frame, fg_color="transparent")
+            right_col.pack(side="right")
+            
+            # Status
+            status_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+            status_frame.pack(anchor="e", pady=3)
+            
+            ctk.CTkLabel(
+                status_frame,
+                text="Status:",
+                font=("Arial", 12, "bold"),
+                text_color="#4b5563"
+            ).pack(side="left", padx=(0, 5))
+            
+            status = order.get('orderStatus', order.get('Status', 'Unknown'))
+            bg_color = "#dcfce7" if status.lower() == 'delivered' else "#fef3c7"
+            text_color = "#166534" if status.lower() == 'delivered' else "#92400e"
+            
+            status_pill = ctk.CTkFrame(status_frame, fg_color=bg_color, corner_radius=10)
+            status_pill.pack(side="left")
+            
+            ctk.CTkLabel(
+                status_pill,
+                text=status.capitalize(),
+                font=("Arial", 11),
+                text_color=text_color,
+                padx=10,
+                pady=2
+            ).pack()
+            
+            # Total
+            total_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+            total_frame.pack(anchor="e", pady=3)
+            
+            ctk.CTkLabel(
+                total_frame,
+                text="Total:",
+                font=("Arial", 12, "bold"),
+                text_color="#4b5563"
+            ).pack(side="left", padx=(0, 5))
+            
+            formatted_total = f"${order['Total_price']:.2f}" if order['Total_price'] else "$0.00"
+            ctk.CTkLabel(
+                total_frame,
+                text=formatted_total,
+                font=("Arial", 14, "bold"),
+                text_color="#1f2937"
+            ).pack(side="left")
+            
+            # Order items
+            items_card = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=8)
+            items_card.pack(fill="x", pady=10)
+            
+            ctk.CTkLabel(
+                items_card,
+                text="Order Items",
+                font=("Arial", 16, "bold"),
+                text_color="#1f2937"
+            ).pack(anchor="w", padx=15, pady=(15, 10))
+            
+            # Get order items
+            items_list = order.get('Item_list', '')
+            
+            if not items_list:
+                ctk.CTkLabel(
+                    items_card,
+                    text="No items found for this order",
+                    font=("Arial", 12),
+                    text_color="#6b7280"
+                ).pack(padx=15, pady=10)
+            else:
+                # Parse item list (assuming it's a semicolon separated list of menu IDs)
+                try:
+                    menu_ids = items_list.split(';')
+                    
+                    # Get menu items
+                    placeholders = ', '.join(['%s'] * len(menu_ids))
+                    query = f"""
+                        SELECT * FROM Menu 
+                        WHERE MenuID IN ({placeholders})
+                    """
+                    cursor.execute(query, menu_ids)
+                    menu_items = cursor.fetchall()
+                    
+                    if menu_items:
+                        # Create items table
+                        table_frame = ctk.CTkFrame(items_card, fg_color="transparent")
+                        table_frame.pack(fill="x", padx=15, pady=(0, 15))
+                        
+                        # Table headers
+                        headers = ["Item", "Price", "Category"]
+                        widths = [0.6, 0.2, 0.2]  # Proportional widths
+                        
+                        for i, (header, width) in enumerate(zip(headers, widths)):
+                            table_frame.columnconfigure(i, weight=int(width * 100))
+                            ctk.CTkLabel(
+                                table_frame,
+                                text=header,
+                                font=("Arial", 12, "bold"),
+                                text_color="#6b7280"
+                            ).grid(row=0, column=i, sticky="w", padx=5, pady=(0, 10))
+                        
+                        # Table rows
+                        for i, item in enumerate(menu_items):
+                            ctk.CTkLabel(
+                                table_frame, 
+                                text=item['Name'],
+                                font=("Arial", 12),
+                                text_color="#1f2937"
+                            ).grid(row=i+1, column=0, sticky="w", padx=5, pady=5)
+                            
+                            formatted_price = f"${item['Price']:.2f}" if item['Price'] else "N/A"
+                            ctk.CTkLabel(
+                                table_frame, 
+                                text=formatted_price,
+                                font=("Arial", 12),
+                                text_color="#6b7280"
+                            ).grid(row=i+1, column=1, sticky="w", padx=5, pady=5)
+                            
+                            ctk.CTkLabel(
+                                table_frame, 
+                                text=item['Category'],
+                                font=("Arial", 12),
+                                text_color="#6b7280"
+                            ).grid(row=i+1, column=2, sticky="w", padx=5, pady=5)
+                    else:
+                        ctk.CTkLabel(
+                            items_card,
+                            text="Item details not found",
+                            font=("Arial", 12),
+                            text_color="#6b7280"
+                        ).pack(padx=15, pady=10)
+                        
+                except Exception as e:
+                    print(f"Error parsing items: {e}")
+                    ctk.CTkLabel(
+                        items_card,
+                        text="Error loading order items",
+                        font=("Arial", 12),
+                        text_color="#ef4444"
+                    ).pack(padx=15, pady=10)
+            
+            # Action buttons at bottom
+            buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent", height=60)
+            buttons_frame.pack(fill="x", padx=20, pady=15)
+            
+            ctk.CTkButton(
+                buttons_frame,
+                text="Close",
+                font=("Arial", 12),
+                fg_color="#f3f4f6",
+                text_color="#4b5563",
+                hover_color="#e5e7eb",
+                width=100,
+                height=35,
+                corner_radius=8,
+                command=details_window.destroy
+            ).pack(side="right")
+            
+            conn.close()
+            
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
+            messagebox.showerror("Database Error", f"Failed to load order details: {err}")
+        except Exception as e:
+            print(f"Error: {e}")
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+
+# Example usage:
+if __name__ == "__main__":
+    # For testing purposes
+    root = ctk.CTk()
+    root.geometry("900x700")
+    root.title("Customer Profile")
+    
+    profile_view = CustomerProfileView(root, customer_id=1)
+    profile_view.pack(fill="both", expand=True)
+    
+    root.mainloop()
