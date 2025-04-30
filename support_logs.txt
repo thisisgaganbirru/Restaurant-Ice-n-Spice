@@ -239,3 +239,11 @@
 2025-04-29 19:18:21,132 - AdminSupport - INFO - Email configuration loaded
 2025-04-29 19:21:19,022 - AdminSupport - INFO - Logging initialized
 2025-04-29 19:21:19,022 - AdminSupport - INFO - Email configuration loaded
+2025-04-30 00:57:27,067 - AdminSupport - INFO - Logging initialized
+2025-04-30 00:57:27,068 - AdminSupport - INFO - Email configuration loaded
+2025-04-30 00:57:27,132 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-04-30 00:57:27,367 - AdminSupport - INFO - Found 1 messages
+2025-04-30 00:57:34,366 - AdminSupport - INFO - Loading messages for folder: sent
+2025-04-30 00:57:34,604 - AdminSupport - INFO - Found 3 messages
+2025-04-30 00:57:38,253 - AdminSupport - INFO - Loading messages for folder: trash
+2025-04-30 00:57:38,490 - AdminSupport - INFO - Found 4 messages
