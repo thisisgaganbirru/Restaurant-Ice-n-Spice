@@ -247,3 +247,26 @@
 2025-04-30 00:57:34,604 - AdminSupport - INFO - Found 3 messages
 2025-04-30 00:57:38,253 - AdminSupport - INFO - Loading messages for folder: trash
 2025-04-30 00:57:38,490 - AdminSupport - INFO - Found 4 messages
+2025-05-04 01:43:17,053 - AdminSupport - INFO - Logging initialized
+2025-05-04 01:43:17,054 - AdminSupport - INFO - Email configuration loaded
+2025-05-04 01:43:17,269 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-05-04 01:43:17,530 - AdminSupport - INFO - Found 1 messages
+2025-05-04 22:35:54,532 - AdminSupport - INFO - Logging initialized
+2025-05-04 22:35:54,532 - AdminSupport - INFO - Email configuration loaded
+2025-05-04 22:35:54,680 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-05-04 22:35:54,939 - AdminSupport - INFO - Found 1 messages
+2025-05-04 23:11:52,843 - AdminSupport - INFO - Logging initialized
+2025-05-04 23:11:52,844 - AdminSupport - INFO - Email configuration loaded
+2025-05-04 23:11:53,040 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-05-04 23:11:53,277 - AdminSupport - INFO - Found 2 messages
+2025-05-04 23:13:06,286 - AdminSupport - INFO - Loading messages for folder: sent
+2025-05-04 23:13:06,533 - AdminSupport - INFO - Found 4 messages
+2025-05-04 23:13:15,185 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-05-04 23:13:15,430 - AdminSupport - INFO - Found 1 messages
+2025-05-04 23:13:21,269 - AdminSupport - INFO - Loading messages for folder: inbox
+2025-05-04 23:13:21,518 - AdminSupport - INFO - Found 0 messages
+2025-05-04 23:13:22,949 - AdminSupport - INFO - Loading messages for folder: trash
+2025-05-04 23:13:23,196 - AdminSupport - INFO - Found 6 messages
+2025-05-04 23:13:59,760 - AdminSupport - INFO - Updating message list: sort=oldest, filter=all
+2025-05-04 23:14:00,054 - AdminSupport - INFO - Loading messages for folder: trash
+2025-05-04 23:14:00,299 - AdminSupport - INFO - Found 6 messages
